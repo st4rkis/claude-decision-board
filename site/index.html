@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Board — interactive demo</title>
+<meta name="description" content="Watch an AI agent build the Decision Board, and make the calls yourself. Three routes, one honest recommendation, one Send.">
+<meta property="og:title" content="Decision Board — interactive demo">
+<meta property="og:description" content="Watch an AI agent build a decision tool, and make the calls yourself. Open source, MIT.">
+<meta property="og:image" content="https://starktronix.com/prototypes/decision-board/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --page:#0f0f0e;--panel:#1a1a18;--panel-2:#222220;--bar:#151514;--line:#2c2c29;--line-2:#3b3b37;
+  --fg:#ecebe6;--fg-2:#b8b6ad;--fg-3:#86857e;--amber:#EF9F27;--green:#97C459;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  /* widget tokens, dark */
+  --text-primary:#ecebe6;--text-secondary:#b8b6ad;--text-muted:#86857e;--text-accent:#85B7EB;--text-danger:#F09595;--text-success:#C0DD97;
+  --bg-accent:#0C447C;--bg-success:#1c380b;--border:#34332f;--border-strong:#55544f;--border-accent:#378ADD;--border-success:#639922;
+  --surface-1:#232321;--surface-2:#2a2a28;--radius:8px;
+  --g50:#3a3a37;--g6:#B4B2A9;--g8:#F1EFE8;--te50:#085041;--te6:#5DCAA5;--te8:#E1F5EE;--gr50:#27500A;--gr6:#97C459;--gr8:#EAF3DE;
+  --am50:#633806;--am6:#EF9F27;--am8:#FAEEDA;--re50:#791F1F;--re6:#F09595;--re8:#FCEBEB;--pu50:#3C3489;--pu6:#AFA9EC;--pu8:#EEEDFE;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--fg);font-family:var(--sans)}
+body{background:radial-gradient(1200px 500px at 50% -120px,#2a2416 0%,transparent 60%),var(--page)}
+a{color:var(--text-accent)}
+.wrap{max-width:920px;margin:0 auto;padding:30px 16px 40px}
+.hero{text-align:center;margin-bottom:20px}
+.eyebrow{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--fg-3);border:1px solid var(--line-2);border-radius:999px;padding:4px 12px;margin-bottom:14px}
+.hero h1{font-size:36px;line-height:1.1;font-weight:600;letter-spacing:-.02em;margin:0 0 12px}
+.hero p{font-size:16px;line-height:1.55;color:var(--fg-2);max-width:640px;margin:0 auto 14px}
+.cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;font:500 14px var(--sans);padding:9px 16px;border-radius:9px;border:1px solid var(--line-2);background:var(--panel);color:var(--fg);text-decoration:none;cursor:pointer}
+.btn:hover{border-color:var(--fg-3)}
+.btn.primary{background:var(--bg-success);border-color:var(--border-success);color:var(--text-success)}
+.term{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 30px 80px -30px #000c}
+.chrome{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bar);border-bottom:1px solid var(--line)}
+.dots{display:flex;gap:7px}.dots i{width:11px;height:11px;border-radius:50%;background:#3a3a37;display:block}
+.chrome .title{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chrome button{font:12px var(--mono);color:var(--fg-2);background:transparent;border:1px solid var(--line-2);border-radius:6px;padding:4px 9px;cursor:pointer}
+.chrome button:hover{color:var(--fg)}
+.log{height:clamp(320px,calc(100vh - 330px),720px);overflow-y:auto;padding:20px 22px 10px}
+.welcome{font-family:var(--mono);font-size:12.5px;color:var(--fg-3);border:1px dashed var(--line-2);border-radius:8px;padding:10px 12px;margin-bottom:18px;line-height:1.6}
+.u{margin:4px 0 18px;padding:10px 14px;background:var(--panel-2);border-left:2px solid var(--fg-3);border-radius:6px;font-family:var(--mono);font-size:13.5px;line-height:1.65;white-space:pre-wrap;color:var(--fg)}
+.u .gt{color:var(--fg-3)}
+.u.sent{font-size:12.5px;color:var(--fg-2)}
+.a{display:flex;gap:10px;margin:6px 0 14px;font-size:15.5px;line-height:1.65}
+.a .b,.tool .b{font-family:var(--mono);color:var(--fg);flex:none;line-height:1.65}
+.tool{margin:4px 0 12px;font-family:var(--mono);font-size:13px}
+.tool .h{display:flex;gap:10px}
+.tool .h b{font-weight:600}.tool .h span{color:var(--fg-2)}
+.tool .o{color:var(--fg-3);margin:2px 0 0 22px}
+.tool.run .b{color:var(--amber);animation:blink 1s steps(1) infinite}
+.tool.ok .b{color:var(--green)}
+.think{margin:4px 0 12px}
+.think-h{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:3px 0;color:var(--amber);font:13px var(--mono);cursor:pointer;text-align:left}
+.think-h .g{display:inline-block;width:14px;text-align:center}
+.think-h .l{font-weight:600}
+.think.running .think-h .l{background:linear-gradient(90deg,var(--amber) 0%,#ffe3b3 45%,var(--amber) 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 1.8s linear infinite}
+.think-h .s{color:var(--fg-3);font-weight:400}
+.think-h .hint{color:var(--fg-3);font-weight:400;text-decoration:underline dotted;text-underline-offset:3px}
+.think.done .think-h{color:var(--fg-3)}
+.steps{list-style:none;margin:6px 0 2px 5px;padding:6px 0 6px 16px;border-left:1px solid var(--line-2);display:none}
+.think.open .steps{display:block}
+.steps li{font-size:13.5px;line-height:1.55;color:var(--fg-2);margin:6px 0;animation:rise .35s ease both}
+.steps li::before{content:"· ";color:var(--fg-3);font-family:var(--mono)}
+.inputbar{display:flex;align-items:flex-start;gap:10px;border-top:1px solid var(--line);padding:13px 16px;background:var(--bar);font-family:var(--mono);font-size:13.5px;line-height:1.6;min-height:50px}
+.inputbar .gt{color:var(--fg-3)}
+#input{flex:1;white-space:pre-wrap;color:var(--fg);max-height:132px;overflow:auto}
+#input.idle{color:var(--fg-3)}
+.cursor{display:inline-block;width:8px;height:16px;background:var(--fg);vertical-align:-3px;margin-left:1px;animation:blink 1s steps(1) infinite}
+.inputbar kbd{font:11px var(--mono);color:var(--fg-3);border:1px solid var(--line-2);border-radius:5px;padding:2px 6px;flex:none}
+.foot{text-align:center;font-size:13px;color:var(--fg-3);margin-top:18px;line-height:1.6}
+@keyframes blink{50%{opacity:0}}
+@keyframes shimmer{to{background-position:-200% 0}}
+@keyframes rise{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+/* ---------- the board (same look as the widget) ---------- */
+.board{font-size:15px;line-height:1.5;color:var(--text-primary);margin:4px 0 18px;max-width:700px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{font:14px var(--sans);padding:6px 14px;border-radius:var(--radius);cursor:pointer;background:transparent;border:0.5px solid var(--border);color:var(--text-secondary)}
+.tab.on{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);font-weight:500}
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.card .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.card .id{font-size:13px;color:var(--text-muted)}.card .ttl{font-weight:500}
+.card .nsr{font-size:12px;color:var(--text-muted)}
+.card .ctx{font-size:14px;color:var(--text-secondary);margin:4px 0 12px}
+.opt{position:relative;cursor:pointer;margin-bottom:6px;padding:9px 12px 22px;border-radius:var(--radius);background:var(--surface-1);border:0.5px solid var(--border)}
+.opt.rec{border:1.5px solid var(--border-success)}
+.opt.on{background:var(--bg-success);border:1.5px solid var(--border-success)}
+.opt .top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.opt .tag{font-size:12px;color:var(--text-muted)}.opt.rec .tag{color:var(--text-success)}
+.opt .lbl{font-size:15px;font-weight:500}.opt.on .lbl{color:var(--text-success)}
+.opt .ck{color:var(--text-success);display:none}.opt.on .ck{display:inline-block}
+.opt .note{font-size:13px;color:var(--text-secondary);margin-top:2px;padding-right:44px}
+.opt a.lnk{position:absolute;right:10px;bottom:5px;font-size:12px;color:var(--text-accent);text-decoration:none}
+.board.locked .opt,.board.locked .act{cursor:default;pointer-events:none}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.act{font:14px var(--sans);cursor:pointer;padding:6px 12px;border-radius:var(--radius);background:transparent;border:0.5px solid var(--border);color:var(--text-secondary)}
+.act.pp{border-style:dashed;border-color:var(--border-strong)}
+.act.open{background:var(--surface-1);color:var(--text-primary)}
+.act i{margin-right:6px}
+.panel{display:none;background:var(--surface-1);border:0.5px solid var(--border-strong);border-radius:12px;padding:12px 14px;margin:0 0 10px}
+.panel .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:13px;font-weight:500;color:var(--text-secondary)}
+.panel .x{background:transparent;border:none;cursor:pointer;color:var(--text-muted);font-size:16px}
+.panel p{margin:0 0 8px;font-size:14px;line-height:1.6;color:var(--text-secondary)}
+.panel p.last{color:var(--text-primary);font-weight:500}
+.note-demo{font-size:13px;color:var(--amber);margin:-4px 0 8px;display:none}
+.inp{width:100%;font:14px var(--sans);padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-1);color:var(--text-primary)}
+.inp:disabled{opacity:.6}
+.prev{display:none;margin-top:10px;padding:8px 10px;border-radius:var(--radius);background:var(--surface-1);border:0.5px solid var(--border)}
+.prev .pt{font-size:12px;color:var(--text-muted);margin-bottom:2px}
+.prev .pp{font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--text-secondary);word-break:break-word}
+.prev .go{margin-top:8px;font:500 13px var(--sans);padding:5px 12px;border-radius:var(--radius);cursor:pointer;background:var(--bg-success);border:1.5px solid var(--border-success);color:var(--text-success)}
+.sendbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:12px;background:var(--surface-1);border:0.5px solid var(--border)}
+.sendbar .cnt{font-size:14px;color:var(--text-secondary)}
+.send{font:500 14px var(--sans);cursor:pointer;padding:8px 18px;border-radius:var(--radius);background:var(--bg-success);border:1.5px solid var(--border-success);color:var(--text-success)}
+.send:disabled{opacity:.5;cursor:default}
+.err{font-size:13px;color:var(--text-danger);margin-top:6px;display:none}
+.outbox{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--surface-1);border:0.5px solid var(--border)}
+.outbox .ot{font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.outbox pre{margin:0;white-space:pre-wrap;word-break:break-word;font:12px/1.55 var(--mono);color:var(--text-secondary)}
+.trk{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:4px 0}
+.trk .row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:0.5px solid var(--border)}
+.trk .row:last-child{border-bottom:0}
+.trk .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.trk .rid{font-size:12px;color:var(--text-muted);width:44px;flex:none}
+.trk .mid{flex:1;min-width:0}.trk .mid b{display:block;font-size:14px;font-weight:500}.trk .mid span{display:block;font-size:13px;color:var(--text-secondary)}
+.trk .st{font-size:12px;color:var(--text-muted);text-align:right;flex:none}
+.dash{margin-top:4px}
+.dash .dh{font-size:13px;font-weight:500;color:var(--text-secondary);margin:0 0 6px}
+/* svg classes */
+.t{font-size:14px;fill:var(--text-primary)}.ts{font-size:12px;fill:var(--text-secondary)}.th{font-size:14px;font-weight:500;fill:var(--text-primary)}
+.c-gray>rect{fill:var(--g50);stroke:var(--g6);stroke-width:.5}.c-gray>text{fill:var(--g8)}
+.c-teal>rect{fill:var(--te50);stroke:var(--te6);stroke-width:.5}.c-teal>text{fill:var(--te8)}
+.c-green>rect{fill:var(--gr50);stroke:var(--gr6);stroke-width:.5}.c-green>text{fill:var(--gr8)}
+.c-amber>rect{fill:var(--am50);stroke:var(--am6);stroke-width:.5}.c-amber>text{fill:var(--am8)}
+.c-purple>rect{fill:var(--pu50);stroke:var(--pu6);stroke-width:.5}.c-purple>text{fill:var(--pu8)}
+@media (max-width:640px){.hero h1{font-size:30px}.log{padding:16px 12px 8px}.a{font-size:15px}.opt .note{padding-right:0;padding-bottom:4px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Open source · MIT · for Claude</div>
+    <h1>Decision Board</h1>
+    <p>An AI agent needs decisions from you. Instead of a wall of text, it hands you three routes, one honest recommendation and one Send. Watch it being built, and make the calls yourself.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/st4rkis/claude-decision-board"><i class="ti ti-brand-github" aria-hidden="true"></i>Get it on GitHub</a>
+      <a class="btn" href="https://github.com/st4rkis/claude-decision-board/blob/main/PROMPT.md"><i class="ti ti-copy" aria-hidden="true"></i>Install prompt</a>
+    </div>
+  </header>
+
+  <section class="term" aria-label="Simulated agent session">
+    <div class="chrome">
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="title">~/decision-board · simulated session</div>
+      <button id="skip" type="button" title="Skip the typing and waits">Skip ›</button>
+      <button id="replay" type="button" title="Start again">Replay</button>
+    </div>
+    <div class="log" id="log" aria-live="polite">
+      <div class="welcome">A replay of how this tool was built, condensed. The agent asks you real questions on the way; every answer leads to the finished tool.</div>
+    </div>
+    <div class="inputbar"><span class="gt">›</span><div id="input" class="idle"></div><kbd>⏎</kbd></div>
+  </section>
+
+  <p class="foot">Simulated session: the steps, files and checks are the real ones from building this tool, shortened.<br>A community project, not affiliated with Anthropic.</p>
+</div>
+
+<script>
+/* ============================ content ============================ */
+const REPO = "https://github.com/st4rkis/claude-decision-board";
+const SPEC = REPO + "/blob/main/docs/SPEC.md";
+const PROMPT_TEXT = "I want a visual, easy tool embedded in your answers instead of long replies: simple answer buttons. Pick the 3 best options. The first is highlighted as your recommendation, but only when you're confident; one bolder, one more conservative. Add a 4th: postpone, ask me again later. Underneath, an empty box to enter a custom reply. Results should come out as prompts, ready to execute. And a tracker of all my decisions, in the chat.\n\nAdd it to memory and make it a golden standard. Can you do this?";
+
+const AH = '<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
+const arrow = (x1,y1,x2,y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>`;
+const box = (c,x,y,w,h,t,cls="t") => `<g class="c-${c}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><text class="${cls}" x="${x+w/2}" y="${y+h/2+5}" text-anchor="middle">${t}</text></g>`;
+
+const VIZ_SEND = `<svg width="100%" viewBox="0 0 680 260" role="img"><title>When an answer leaves</title><desc>One Send lets you change your mind; send on tap is fastest; confirm is the most careful.</desc>${AH}
+<text class="th" x="40" y="30">When does an answer leave?</text>
+<text class="ts" x="40" y="72">A · One Send</text>${box("gray",170,50,80,36,"Tap")}${arrow(252,68,278,68)}${box("gray",282,50,110,36,"Preview")}${arrow(394,68,420,68)}${box("green",424,50,216,36,"One Send, every card")}
+<text class="ts" x="40" y="132">B · On tap</text>${box("gray",170,110,80,36,"Tap")}${arrow(252,128,278,128)}${box("purple",282,110,358,36,"Sent at once, no take-back")}
+<text class="ts" x="40" y="192">C · Confirm</text>${box("gray",170,170,80,36,"Tap")}${arrow(252,188,278,188)}${box("gray",282,170,110,36,"Confirm")}${arrow(394,188,420,188)}${box("gray",424,170,216,36,"Sent, one card at a time")}
+<text class="ts" x="340" y="240" text-anchor="middle">A lets you change your mind. B is fastest. C is the most careful.</text></svg>`;
+
+const VIZ_TRACK = `<svg width="100%" viewBox="0 0 680 250" role="img"><title>Where the decision history lives</title><desc>A ledger file feeds a tracker tab, a dashboard page, or a text list.</desc>${AH}
+<text class="th" x="40" y="30">Where the history lives</text>
+<g class="c-purple"><rect x="40" y="88" width="170" height="64" rx="10"/><text class="t" x="125" y="115" text-anchor="middle">ledger.json</text><text class="ts" x="125" y="135" text-anchor="middle">every decision</text></g>
+${arrow(212,112,296,64)}${arrow(212,120,296,124)}${arrow(212,128,296,184)}
+${box("green",300,42,340,44,"A · Tracker tab, redrawn every time")}${box("gray",300,102,340,44,"B · Dashboard page, hosted separately")}${box("gray",300,162,340,44,"C · Text list at the end of replies")}
+<text class="ts" x="340" y="236" text-anchor="middle">The widget forgets between replies, so every option needs the ledger.</text></svg>`;
+
+const VIZ_REACH = `<svg width="100%" viewBox="0 0 680 230" role="img"><title>Who gets the tool</title><desc>Your standard, everyone, or this project only.</desc>
+<text class="th" x="40" y="30">Who gets it next</text>
+<g class="c-green"><rect x="40" y="48" width="180" height="120" rx="12"/><text class="t" x="130" y="80" text-anchor="middle">A · Your standard</text><text class="ts" x="130" y="112" text-anchor="middle">saved to memory</text><text class="ts" x="130" y="134" text-anchor="middle">every session you open</text></g>
+<g class="c-purple"><rect x="250" y="48" width="180" height="120" rx="12"/><text class="t" x="340" y="80" text-anchor="middle">B · Everyone</text><text class="ts" x="340" y="112" text-anchor="middle">memory + public repo</text><text class="ts" x="340" y="134" text-anchor="middle">one-paste install</text></g>
+<g class="c-gray"><rect x="460" y="48" width="180" height="120" rx="12"/><text class="t" x="550" y="80" text-anchor="middle">C · This project</text><text class="ts" x="550" y="112" text-anchor="middle">no memory</text><text class="ts" x="550" y="134" text-anchor="middle">nothing changes elsewhere</text></g>
+<text class="ts" x="340" y="205" text-anchor="middle">All three build the tool. They differ in who can use it next.</text></svg>`;
+
+const VIZ_NEXT = `<svg width="100%" viewBox="0 0 680 150" role="img"><title>From one paste to every session</title><desc>Paste the install prompt, Claude saves it to memory, and every later session uses the board.</desc>${AH}
+${box("gray",40,50,130,44,"PROMPT.md")}${arrow(172,72,196,72)}${box("gray",200,50,130,44,"Paste once")}${arrow(332,72,356,72)}${box("purple",360,50,130,44,"Saved to memory")}${arrow(492,72,516,72)}${box("green",520,50,120,44,"Every session")}
+<text class="ts" x="340" y="128" text-anchor="middle">About thirty seconds. Nothing to install.</text></svg>`;
+
+const CARDS_1 = [
+ {id:"D-001",t:"How should answers be sent?",conf:"high",
+  ctx:"You'll often answer several decisions at once, and change your mind while you do.",
+  explain:"Every card turns your tap into an instruction the agent can run. The question is when that happens.\n\nSending on tap is fastest, but a mis-tap has already gone. Picking first and sending once lets you change your mind, and the agent gets every answer in one message.\n\nIn short: pick and preview with one Send, send the moment you tap, or confirm each card.",
+  viz:VIZ_SEND,
+  opts:[
+   {k:"A",tag:"Recommended",label:"Pick, preview, then one Send",note:"Change your mind freely. Nothing leaves until you press Send.",p:"Select answers, show the exact prompt under each card, and send them all with one Send. A later change resends only what changed.",link:SPEC+"#selection-and-sending"},
+   {k:"B",tag:"Bolder",label:"Send on tap",note:"One tap per decision. Fastest, with no take-back.",p:"Send each answer the moment it's tapped.",link:SPEC+"#selection-and-sending"},
+   {k:"C",tag:"Safer",label:"Confirm each answer",note:"A confirm step on every card. Safest, and slowest.",p:"Ask for a confirmation on every card before sending it.",link:SPEC+"#selection-and-sending"}]},
+ {id:"D-002",t:"Where should the decision tracker live?",conf:"high",
+  ctx:"A widget forgets everything between replies, so the history has to live somewhere.",
+  explain:"The board is drawn fresh with every reply and can't remember anything on its own. For the tracker to stay true, it needs a home outside the widget.\n\nA small ledger file holds every decision, and the board's Tracker tab is drawn from it each time, so it can never drift.\n\nIn short: a ledger behind a Tracker tab, a separate dashboard page, or a plain list at the end of replies.",
+  viz:VIZ_TRACK,
+  opts:[
+   {k:"A",tag:"Recommended",label:"A Tracker tab, drawn from a ledger",note:"Always true: redrawn from one file every time.",p:"Keep every decision in a ledger file and draw the board's Tracker tab from it on every render.",link:SPEC+"#the-ledger-and-the-tracker"},
+   {k:"B",tag:"Bolder",label:"A live dashboard page",note:"Always visible. One more thing to host and keep in sync.",p:"Build a separate live dashboard page for the decision history.",link:SPEC+"#the-ledger-and-the-tracker"},
+   {k:"C",tag:"Safer",label:"A list at the end of each reply",note:"No UI at all. Easy to lose in a long chat.",p:"Append a plain list of past decisions to the end of each reply.",link:SPEC+"#the-ledger-and-the-tracker"}]}
+];
+const CARDS_2 = [
+ {id:"D-003",t:"Make it the golden standard?",conf:"high",
+  ctx:"The tool works and the checks pass. Now: who gets it?",
+  explain:"Saving it to memory makes every future session ask for decisions this way, without being told again.\n\nPublishing it as well, with a public repo and a one-paste install prompt, lets anyone teach it to their own Claude in thirty seconds.\n\nIn short: make it your standard, make it everyone's, or keep it to this project.",
+  viz:VIZ_REACH,
+  opts:[
+   {k:"A",tag:"Recommended",label:"Save it as my golden standard",note:"Every session uses it from now on, without being asked.",p:"Save the Decision Board to memory as the golden standard for every session.",link:REPO+"/blob/main/PROMPT.md"},
+   {k:"B",tag:"Bolder",label:"Save it, and share it with everyone",note:"Also publish a public repo and a one-paste install prompt.",p:"Save it as the golden standard, then publish it: public repo, MIT licence, install prompt.",link:REPO},
+   {k:"C",tag:"Safer",label:"Just this project",note:"Use it here only. Nothing changes anywhere else.",p:"Use the Decision Board in this project only, without saving it to memory.",link:SPEC}]}
+];
+const CARD_NEXT = {id:"D-004",t:"Where will you use it first?",conf:"high",
+  ctx:"This is the tool you just designed. Try it: pick, open Explain or Visualise, then Send.",
+  explain:"The Decision Board works anywhere Claude can show a widget, and falls back to a plain multiple-choice question anywhere else.\n\nThe install prompt teaches it to Claude in one paste; the repo has the widget, a small renderer and a worked example.\n\nIn short: install it in your next session, share it with your team, or read the code first.",
+  viz:VIZ_NEXT,
+  opts:[
+   {k:"A",tag:"Recommended",label:"In my next Claude session",note:"Paste the install prompt once. Claude remembers it.",p:"Install the Decision Board in my next session from PROMPT.md and save it as my standard.",link:REPO+"/blob/main/PROMPT.md"},
+   {k:"B",tag:"Bolder",label:"Across my whole team",note:"Share the repo. Everyone installs it in thirty seconds.",p:"Share the Decision Board repo with the team and have everyone install it this week.",link:REPO},
+   {k:"C",tag:"Safer",label:"Read the code first",note:"One HTML file, one small script, no dependencies.",p:"Walk me through board-template.html and fill.py before I install anything.",link:REPO+"/blob/main/board/board-template.html"}]};
+
+/* ============================ helpers ============================ */
+const $ = s => document.querySelector(s);
+const log = $("#log"), input = $("#input");
+let SPEED = 1, RUN = 0;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, ms * SPEED));
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function icon(n){ const i=el("i","ti ti-"+n); i.setAttribute("aria-hidden","true"); return i; }
+let stick = true;
+log.addEventListener("scroll", () => { stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 60; });
+function bottom(){ if(stick) log.scrollTop = log.scrollHeight; }
+function revealTop(node){ stick=false; log.scrollTop = Math.max(0, node.offsetTop - log.offsetTop - 14); }
+function ensureVisible(node){ const lr=log.getBoundingClientRect(), r=node.getBoundingClientRect();
+  if(r.bottom > lr.bottom) log.scrollTop += Math.min(r.bottom - lr.bottom + 16, r.top - lr.top - 14); }
+function termInView(){ const t=document.querySelector('.term').getBoundingClientRect();
+  if(t.bottom > innerHeight) scrollTo({top: scrollY + t.bottom - innerHeight + 12, behavior: reduced ? 'auto' : 'smooth'}); }
+function add(node){ log.appendChild(node); bottom(); return node; }
+function guard(run){ if(run !== RUN) throw new Error("replayed"); }
+
+async function typeInto(target, text, perChar, run){
+  target.textContent = ""; const cur = el("span","cursor");
+  for(let i=0;i<text.length;i++){
+    guard(run);
+    target.textContent = text.slice(0,i+1); target.appendChild(cur);
+    target.scrollTop = target.scrollHeight;
+    if(SPEED > 0) await new Promise(r=>setTimeout(r, perChar*(0.6+Math.random()*0.8)));
+  }
+  cur.remove();
+}
+function userMsg(text, sent){ stick=true; const d=el("div","u"+(sent?" sent":"")); d.appendChild(el("span","gt","> ")); d.appendChild(document.createTextNode(text)); return add(d); }
+async function aiMsg(text, run){
+  const d=el("div","a"); d.appendChild(el("span","b","⏺")); const s=el("div"); d.appendChild(s); add(d);
+  if(SPEED===0){ s.textContent=text; return; }
+  for(let i=0;i<text.length;i+=3){ guard(run); s.textContent=text.slice(0,i+3); bottom(); await new Promise(r=>setTimeout(r,14)); }
+  s.textContent=text; bottom();
+}
+async function tool(name, arg, result, run, ms=900){
+  const d=el("div","tool run"); const h=el("div","h"); h.appendChild(el("span","b","⏺"));
+  const t=el("div"); const b=el("b",null,name); t.appendChild(b); t.appendChild(el("span",null,"("+arg+")")); h.appendChild(t); d.appendChild(h); add(d);
+  await sleep(ms); guard(run);
+  d.className="tool ok"; d.appendChild(el("div","o","⎿  "+result)); bottom();
+}
+async function think(label, steps, run, doneLabel){
+  const w=el("div","think running"); const h=el("button","think-h"); h.type="button";
+  const g=el("span","g","✻"), l=el("span","l",label+"…"), s=el("span","s","0s"), hint=el("span","hint","see the steps");
+  h.append(g,l,s,hint); const ol=el("ol","steps"); w.append(h,ol); add(w);
+  h.onclick=()=>{ w.classList.toggle("open"); hint.textContent = w.classList.contains("open") ? "hide the steps" : "see the steps"; bottom(); };
+  const glyphs=["·","✢","✳","∗","✻","✽"]; let gi=0; const t0=Date.now();
+  const spin=setInterval(()=>{ g.textContent=glyphs[gi++%glyphs.length]; s.textContent=Math.round((Date.now()-t0)/1000)+"s"; },120);
+  try{
+    for(const step of steps){ await sleep(1150); guard(run); const li=el("li",null,step); ol.appendChild(li); bottom(); }
+    await sleep(700); guard(run);
+  } finally { clearInterval(spin); }
+  const secs=Math.max(1,Math.round((Date.now()-t0)/1000));
+  w.className="think done"+(w.classList.contains("open")?" open":""); g.textContent="✻";
+  l.textContent=(doneLabel||"Thought")+" for "+secs+"s"; s.textContent="";
+}
+
+/* ============================ the board ============================ */
+function Board(cards, o){
+  // o: {ledger, mode:"batch"|"tap"|"confirm", tracker:"tab"|"none", demo, requireAll, onSend, lockAfterSend}
+  const root=el("div","board"), SEL={}, SENT={}, UI={};
+  const DOT={open:"#EF9F27",decided:"#378ADD",done:"#639922",postponed:"#888780"};
+  const mode=o.mode||"batch"; let tab=cards.length?"decide":"track", resolveSend;
+  const isRec=(d,x)=>d.conf==="high"&&d.opts[0].k===x.k;
+  const promptFor=d=>{ const s=SEL[d.id]; if(!s) return ""; const x=d.opts.find(q=>q.k===s);
+    return "["+d.id+" · "+d.t+"] DECIDED "+x.k+" ("+(isRec(d,x)?"recommended":x.tag.toLowerCase())+") — "+x.p; };
+
+  function tracker(){
+    const w=el("div","trk");
+    (o.ledger||[]).forEach(r=>{ const row=el("div","row"); const dot=el("span","dot"); dot.style.background=DOT[r.status];
+      const mid=el("div","mid"); mid.append(el("b",null,r.title), el("span",null,r.status==="open"?"waiting on you":r.outcome));
+      const st=el("div","st"); st.append(document.createTextNode(r.status), el("br"), document.createTextNode(r.owner||"-"));
+      row.append(dot, el("span","rid",r.id), mid, st); w.appendChild(row); });
+    return w;
+  }
+  function refresh(d){
+    const u=UI[d.id];
+    d.opts.forEach(x=>{ const b=u.opts[x.k]; b.classList.toggle("on", SEL[d.id]===x.k); b.setAttribute("aria-pressed", SEL[d.id]===x.k?"true":"false"); });
+    const p=promptFor(d); u.prev.style.display=p?"block":"none"; u.pp.textContent=p;
+    u.pt.textContent = SENT[d.id] ? (SENT[d.id]===p?"Sent":"Will replace what you sent") : "Will send";
+    if(u.go) u.go.style.display = (mode==="confirm" && p && SENT[d.id]!==p) ? "inline-block" : "none";
+    bar();
+  }
+  function panel(d, which){
+    const u=UI[d.id]; const same=u.open===which; u.open=same?null:which;
+    [u.ex,u.vz].forEach(b=>b.classList.remove("open")); u.panel.innerHTML="";
+    if(same){ u.panel.style.display="none"; return; }
+    (which==="explain"?u.ex:u.vz).classList.add("open"); u.panel.style.display="block";
+    const ph=el("div","ph"); ph.appendChild(el("span",null,which==="explain"?"In plain words":"What this looks like"));
+    const x=el("button","x"); x.type="button"; x.setAttribute("aria-label","Close"); x.appendChild(icon("x")); x.onclick=()=>panel(d,which); ph.appendChild(x); u.panel.appendChild(ph);
+    if(which==="explain"){ const ps=d.explain.split("\n\n"); ps.forEach((t,i)=>u.panel.appendChild(el("p",i===ps.length-1?"last":null,t))); }
+    else { const v=el("div"); v.innerHTML=d.viz; u.panel.appendChild(v); }
+    ensureVisible(u.panel);
+  }
+  function card(d){
+    const u=UI[d.id]={opts:{}}; const c=el("div","card");
+    const hd=el("div","hd"); hd.append(el("span","id",d.id), el("span","ttl",d.t)); if(d.conf!=="high") hd.appendChild(el("span","nsr","no strong recommendation")); c.appendChild(hd);
+    c.appendChild(el("div","ctx",d.ctx));
+    d.opts.forEach(x=>{
+      const b=el("div","opt"+(isRec(d,x)?" rec":"")); b.setAttribute("role","button"); b.tabIndex=0;
+      const top=el("div","top"); top.append(icon("check")); top.lastChild.className="ti ti-check ck";
+      top.append(el("span","tag",isRec(d,x)?"★ Recommended":x.tag), el("span","lbl",x.label)); b.appendChild(top);
+      b.appendChild(el("div","note",x.note));
+      if(x.link){ const a=el("a","lnk"); a.href=x.link; a.target="_blank"; a.rel="noopener"; a.append(document.createTextNode("Link "), icon("external-link")); a.onclick=e=>e.stopPropagation(); b.appendChild(a); }
+      const pick=()=>{ SEL[d.id]= SEL[d.id]===x.k && mode!=="tap" ? undefined : x.k; refresh(d); if(mode==="tap" && SEL[d.id]) sendCards([d]); };
+      b.onclick=pick; b.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(); } };
+      u.opts[x.k]=b; c.appendChild(b);
+    });
+    const acts=el("div","acts");
+    const pp=el("button","act pp"); pp.type="button"; pp.append(icon("clock"), document.createTextNode("Postpone"));
+    u.ex=el("button","act"); u.ex.type="button"; u.ex.append(icon("info-circle"), document.createTextNode("Explain it"));
+    u.vz=el("button","act"); u.vz.type="button"; u.vz.append(icon("chart-dots"), document.createTextNode("Visualise it"));
+    acts.append(pp,u.ex,u.vz); c.appendChild(acts);
+    const nd=el("div","note-demo","In this demo every road leads to the finished tool. Pick a route, and try Postpone in a real session.");
+    pp.onclick=()=>{ nd.style.display="block"; setTimeout(()=>nd.style.display="none",3800); };
+    u.ex.onclick=()=>panel(d,"explain"); u.vz.onclick=()=>panel(d,"viz");
+    c.appendChild(nd);
+    u.panel=el("div","panel"); c.appendChild(u.panel);
+    const inp=el("input","inp"); inp.disabled=true; inp.placeholder="Enter custom reply… (off in this demo)"; c.appendChild(inp);
+    u.prev=el("div","prev"); u.pt=el("div","pt","Will send"); u.pp=el("div","pp"); u.prev.append(u.pt,u.pp);
+    if(mode==="confirm"){ u.go=el("button","go","Confirm and send"); u.go.type="button"; u.go.onclick=()=>sendCards([d]); u.prev.appendChild(u.go); }
+    c.appendChild(u.prev);
+    return c;
+  }
+  let barEl;
+  function bar(){ if(!barEl) return;
+    const n=cards.filter(d=>SEL[d.id]).length, ch=cards.filter(d=>SEL[d.id]&&SENT[d.id]!==promptFor(d)).length;
+    barEl.cnt.textContent=n+" of "+cards.length+" answered"+(ch&&Object.keys(SENT).length?" · "+ch+" changed":"");
+    barEl.send.textContent=ch>1?"Send "+ch+" decisions":"Send"; barEl.err.style.display="none"; }
+  function sendCards(list){
+    const lines=list.map(d=>promptFor(d)+(SENT[d.id]?" (This replaces my earlier answer.)":""));
+    const text=(lines.length>1?"Decisions from the board:\n":"")+lines.join("\n");
+    list.forEach(d=>{ SENT[d.id]=promptFor(d); refresh(d); });
+    const choices={}; cards.forEach(d=>{ if(SEL[d.id]) choices[d.id]=SEL[d.id]; });
+    if(o.lockAfterSend){ root.classList.add("locked"); if(barEl) barEl.send.disabled=true; }
+    if(o.onSend) o.onSend(text, choices);
+    if(resolveSend) resolveSend({text, choices});
+  }
+  function sendAll(){
+    const list=cards.filter(d=>SEL[d.id]&&SENT[d.id]!==promptFor(d));
+    if(o.requireAll && cards.some(d=>!SEL[d.id])){ barEl.err.textContent="Answer "+(cards.length>1?"every card":"the card")+" to continue."; barEl.err.style.display="block"; return; }
+    if(!list.length){ barEl.err.textContent=cards.some(d=>SEL[d.id])?"Nothing has changed since you last sent.":"Pick an answer first."; barEl.err.style.display="block"; return; }
+    sendCards(list);
+  }
+  function render(){
+    root.innerHTML=""; barEl=null;
+    if(o.tracker!=="none"){
+      const tabs=el("div","tabs");
+      [["decide","Needs you · "+cards.length],["track","Tracker · "+(o.ledger||[]).length]].forEach(([k,l])=>{
+        const b=el("button","tab"+(tab===k?" on":""),l); b.type="button"; b.onclick=()=>{ tab=k; render(); }; tabs.appendChild(b); });
+      root.appendChild(tabs);
+    }
+    if(tab==="track"){ root.appendChild(tracker()); return; }
+    cards.forEach(d=>root.appendChild(card(d)));
+    if(mode==="batch"){
+      const row=el("div","sendbar"); const cnt=el("span","cnt"); const send=el("button","send","Send"); send.type="button"; send.onclick=sendAll; row.append(cnt,send);
+      const err=el("div","err"); root.append(row,err); barEl={cnt,send,err};
+    }
+    root.appendChild(o.outbox=el("div","outbox"));
+    cards.forEach(d=>refresh(d));
+  }
+  render();
+  root.waitSend=()=>new Promise(r=>resolveSend=r);
+  root.showOutbox=text=>{ const ob=o.outbox; ob.innerHTML=""; ob.append(el("div","ot","In a real session, this goes straight to the agent:"), el("pre",null,text)); ob.style.display="block"; bottom(); };
+  return root;
+}
+
+/* ============================ the story ============================ */
+const pick=(cards,id,k)=>cards.find(c=>c.id===id).opts.find(x=>x.k===k);
+
+async function story(run){
+  input.className=""; input.textContent="";
+  await sleep(400); guard(run); termInView(); await sleep(500); guard(run);
+  await typeInto(input, PROMPT_TEXT, 17, run);
+  await sleep(500); guard(run);
+  input.textContent=""; userMsg(PROMPT_TEXT);
+  input.className="idle"; input.textContent="Working…";
+
+  await think("Thinking", [
+    "Reading the brief: three routes, a star only when confident, one bolder, one safer, Postpone, a custom reply, prompts out, a tracker in the chat, saved as a standard.",
+    "Yes, this can be built: the chat can render a small interactive widget, and a button can send a message back as if it were typed.",
+    "Two choices shape everything else: when an answer is sent, and where the history lives. Ask those first."
+  ], run);
+  await aiMsg("Yes, I can build this. Two decisions shape the rest, so I've put them on a board. Pick an answer on each, open Explain it or Visualise it if you want the detail, then press Send.", run);
+
+  input.textContent="Answer on the board above ↑";
+  const b1=Board(CARDS_1,{requireAll:true,lockAfterSend:true,ledger:[
+      {id:"D-001",title:"How should answers be sent?",status:"open",owner:"You"},
+      {id:"D-002",title:"Where should the decision tracker live?",status:"open",owner:"You"}]});
+  add(b1); revealTop(b1.previousElementSibling);
+  const r1=await b1.waitSend(); guard(run);
+  userMsg(r1.text, true);
+  input.textContent="Working…";
+
+  const send=r1.choices["D-001"], home=r1.choices["D-002"];
+  const homeStep={A:"A Tracker tab drawn from a ledger file: the only kind of history a forgetful widget can't get wrong.",
+                  B:"A dashboard page, as you chose. I'll still keep a ledger underneath, so the page and the board can't drift apart.",
+                  C:"A list at the end of replies, as you chose. Built from a ledger, so it's never missing an entry."}[home];
+  await think("Thinking", [
+    "Checking the widget renderer: anything fixed-position collapses the frame, so Explain it and Visualise it must open inside the card.",
+    "Colours: semantic success tokens adapt to light and dark mode by themselves, so the green outline and green selection are safe in both.",
+    "The reply format: one line per card, [D-nnn · title] DECIDED A (recommended) — followed by the instruction, so the agent can act without asking again.",
+    homeStep
+  ], run);
+  await tool("Write","decisions/ledger.json","3 decisions · 2 decided, 1 open", run, 800);
+  await tool("Write","board/board-template.html","212 lines · cards, pop-ups, links, preview, "+(send==="A"?"one Send bar":send==="B"?"send on tap":"confirm per card")+", tracker", run, 1100);
+
+  const ack={A:"Answers are picked and previewed, then sent together with one Send.",
+             B:"Answers go the moment you tap them. The preview still shows exactly what went.",
+             C:"Every card asks you to confirm before it sends."}[send];
+  await aiMsg("Built. "+ack+" One last decision, and then I'll test it and put it to work:", run);
+
+  input.textContent="Answer on the board above ↑";
+  const b2=Board(CARDS_2,{requireAll:true,lockAfterSend:true,ledger:[
+      {id:"D-001",title:"How should answers be sent?",status:"decided",outcome:pick(CARDS_1,"D-001",send).label,owner:"You"},
+      {id:"D-002",title:"Where should the decision tracker live?",status:"decided",outcome:pick(CARDS_1,"D-002",home).label,owner:"You"},
+      {id:"D-003",title:"Make it the golden standard?",status:"open",owner:"You"}]});
+  add(b2); revealTop(b2.previousElementSibling);
+  const r2=await b2.waitSend(); guard(run);
+  userMsg(r2.text, true);
+  input.textContent="Working…";
+  const reach=r2.choices["D-003"];
+
+  await think("Testing", [
+    "Testing it the way a person would: pick A, then switch to C. The preview must rewrite itself, and the green must move.",
+    "A Link inside an answer has to open the file without selecting that answer.",
+    "Typing a custom reply selects it; picking a route afterwards clears the text.",
+    "Send carries every answered card in one message; sending again carries only what changed.",
+    "Light and dark screenshots: nothing clipped, every picture readable."
+  ], run, "Tested");
+  await tool("Bash","python3 tools/fill.py examples/cards.json --standalone","board rendered · 3 cards · tracker drawn from the ledger", run, 900);
+  await tool("Bash","run the interaction checks","9 passed · 0 failed", run, 1200);
+  if(reach!=="C") await tool("Write","~/.claude/memory/decision_board_standard.md","saved · the golden standard for every session", run, 900);
+  else await tool("Write",".claude/project-notes.md","enabled for this project only", run, 900);
+  if(reach==="B"){
+    await tool("Write","PROMPT.md","the install prompt · one paste teaches it to any Claude", run, 800);
+    await tool("Bash","gh repo create claude-decision-board --public --push","published · MIT licence", run, 1300);
+  }
+
+  const outro={A:"It's saved as your golden standard: from now on, every session asks you for decisions this way.",
+               B:"It's saved as your golden standard, and published: anyone can install it with one paste.",
+               C:"It's switched on for this project only."}[reach];
+  await aiMsg("Done. "+outro+" Here's the tool you just designed, with your three decisions already in its tracker. Try it:", run);
+
+  const finalLedger=[
+    {id:"D-001",title:"How should answers be sent?",status:"done",outcome:pick(CARDS_1,"D-001",send).label,owner:"You"},
+    {id:"D-002",title:"Where should the decision tracker live?",status:"done",outcome:pick(CARDS_1,"D-002",home).label,owner:"You"},
+    {id:"D-003",title:"Make it the golden standard?",status:"done",outcome:pick(CARDS_2,"D-003",reach).label,owner:"You"},
+    {id:"D-004",title:"Where will you use it first?",status:"open",owner:"You"}];
+  const fb=Board([CARD_NEXT],{mode:{A:"batch",B:"tap",C:"confirm"}[send], tracker:home==="A"?"tab":"none", ledger:finalLedger,
+    onSend:(text)=>fb.showOutbox(text)});
+  add(fb); revealTop(fb.previousElementSibling);
+  if(home!=="A"){
+    const dash=el("div","board dash"); dash.appendChild(el("div","dh", home==="B"?"Decision dashboard":"Decisions so far"));
+    const t=Board([], {ledger:finalLedger, tracker:"tab"}); t.querySelector(".tabs").remove(); dash.appendChild(t); add(dash);
+  }
+  input.className="idle"; input.textContent="Your turn: this board is live.";
+  const end=el("div","cta"); end.style.justifyContent="flex-start"; end.style.margin="4px 0 18px";
+  const rp=el("button","btn"); rp.type="button"; rp.append(icon("refresh"), document.createTextNode("Replay with other answers")); rp.onclick=start;
+  const gh=el("a","btn primary"); gh.href=REPO; gh.append(icon("brand-github"), document.createTextNode("Get it on GitHub"));
+  end.append(gh, rp); add(end);
+}
+
+function start(){
+  RUN++; SPEED = reduced ? 0 : 1;
+  log.querySelectorAll(":scope > :not(.welcome)").forEach(n=>n.remove());
+  stick=true; log.scrollTop=0;
+  story(RUN).catch(e=>{ if(e.message!=="replayed") console.error(e); });
+}
+$("#replay").onclick=start;
+$("#skip").onclick=()=>{ SPEED=0; };
+start();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 
 When an AI assistant needs you to decide something, it usually writes a wall of text and ends with "Which would you prefer?". Decision Board replaces that with an interactive card for each decision, rendered right in the chat. You tap an answer, see exactly what will be sent, and send every decision at once.
 
-**[Try the live demo →](https://st4rkis.github.io/claude-decision-board/demo/)**
+**[▶ Play the live demo](https://starktronix.com/prototypes/decision-board)** — watch an agent build this tool, and make the calls yourself. Every answer you pick shapes the finished tool it hands you at the end.
 
 <p align="center">
   <img src="docs/screenshot.png" width="49%" alt="A decision card in light mode: the recommended route selected in green, with the Visualise panel open">
@@ -37,7 +37,8 @@ Read https://github.com/st4rkis/claude-decision-board/blob/main/PROMPT.md and fo
 
 ### 2. Try it in a browser
 
-Open the [live demo](https://st4rkis.github.io/claude-decision-board/demo/), or download this repo and open `demo/index.html`. Everything works the same, except that **Send** shows the message and copies it to your clipboard instead of posting it to a chat.
+- **[The live demo](https://starktronix.com/prototypes/decision-board)** replays how this tool was built, as a simulated agent session. It types the original request, thinks (click to see its steps), and asks you two decisions on a board. It builds, asks one more, tests, and hands you the finished tool, shaped by your answers.
+- **Offline:** download this repo and open `demo/index.html` for the plain board with a worked example, or `site/index.html` for the live demo itself. Everything works the same, except that **Send** shows the message and copies it instead of posting it to a chat.
 
 ### 3. Render your own board
 
@@ -71,6 +72,7 @@ The `[D-nnn · title]` prefix is how the assistant recognises your decision. It 
 | [`tools/fill.py`](tools/fill.py) | Fills the template from your cards and ledger. |
 | [`examples/`](examples) | A complete example: three cards with pictures, and a ledger. |
 | [`demo/index.html`](demo/index.html) | The example as a standalone page. |
+| [`site/index.html`](site/index.html) | The live demo: a simulated agent session that builds the tool with you. |
 | [`docs/SPEC.md`](docs/SPEC.md) | The full standard: every rule, and why. |
 
 ## The card format
