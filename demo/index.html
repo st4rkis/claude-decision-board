@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Board</title>
+<meta name="description" content="Ask for decisions with three routes, a clear recommendation, and one Send.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --text-primary:#1f1e1d;--text-secondary:#5f5e5a;--text-muted:#888780;--text-accent:#185FA5;--text-danger:#A32D2D;--text-success:#3B6D11;
+  --bg-accent:#E6F1FB;--bg-success:#EAF3DE;--border:#d3d1c7;--border-strong:#b4b2a9;--border-accent:#378ADD;--border-success:#639922;
+  --surface-1:#f5f4ef;--surface-2:#ffffff;--page:#fbfaf7;--radius:8px;--font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --g50:#F1EFE8;--g6:#5F5E5A;--g8:#444441;--te50:#E1F5EE;--te6:#0F6E56;--te8:#085041;--gr50:#EAF3DE;--gr6:#3B6D11;--gr8:#27500A;
+  --am50:#FAEEDA;--am6:#854F0B;--am8:#633806;--re50:#FCEBEB;--re6:#A32D2D;--re8:#791F1F;--pu50:#EEEDFE;--pu6:#534AB7;--pu8:#3C3489;
+}
+@media (prefers-color-scheme: dark){:root{
+  --text-primary:#ecebe6;--text-secondary:#b4b2a9;--text-muted:#888780;--text-accent:#85B7EB;--text-danger:#F09595;--text-success:#C0DD97;
+  --bg-accent:#0C447C;--bg-success:#173404;--border:#3a3936;--border-strong:#5F5E5A;--border-accent:#378ADD;--border-success:#639922;
+  --surface-1:#252523;--surface-2:#2c2c2a;--page:#1b1b1a;
+  --g50:#444441;--g6:#B4B2A9;--g8:#F1EFE8;--te50:#085041;--te6:#5DCAA5;--te8:#E1F5EE;--gr50:#27500A;--gr6:#97C459;--gr8:#EAF3DE;
+  --am50:#633806;--am6:#EF9F27;--am8:#FAEEDA;--re50:#791F1F;--re6:#F09595;--re8:#FCEBEB;--pu50:#3C3489;--pu6:#AFA9EC;--pu8:#EEEDFE;
+}}
+body{margin:0;background:var(--page);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--text-primary)}
+main{max-width:680px;margin:0 auto;padding:28px 16px 48px}
+.intro{font-size:14px;color:var(--text-secondary);margin:0 0 20px;line-height:1.6}
+.intro b{color:var(--text-primary);font-weight:500}
+.t{font-size:14px;fill:var(--text-primary)}.ts{font-size:12px;fill:var(--text-secondary)}.th{font-size:14px;font-weight:500;fill:var(--text-primary)}
+.c-gray>rect{fill:var(--g50);stroke:var(--g6);stroke-width:.5}.c-gray>text{fill:var(--g8)}
+.c-teal>rect{fill:var(--te50);stroke:var(--te6);stroke-width:.5}.c-teal>text{fill:var(--te8)}
+.c-green>rect{fill:var(--gr50);stroke:var(--gr6);stroke-width:.5}.c-green>text{fill:var(--gr8)}
+.c-amber>rect{fill:var(--am50);stroke:var(--am6);stroke-width:.5}.c-amber>text{fill:var(--am8)}
+.c-red>rect{fill:var(--re50);stroke:var(--re6);stroke-width:.5}.c-red>text{fill:var(--re8)}
+.c-purple>rect{fill:var(--pu50);stroke:var(--pu6);stroke-width:.5}.c-purple>text{fill:var(--pu8)}
+#outbox{display:none;margin-top:18px;padding:14px 16px;border-radius:12px;background:var(--surface-1);border:0.5px solid var(--border)}
+#outbox pre{white-space:pre-wrap;word-break:break-word;font-family:var(--font-mono);font-size:12px;line-height:1.55;margin:8px 0 10px;color:var(--text-secondary)}
+#outbox button{font:inherit;font-size:13px;padding:6px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-2);color:var(--text-primary);cursor:pointer}
+</style>
+<script>
+// Stand-in for the Claude client's sendPrompt: show the message and copy it.
+window.sendPrompt = function (text) {
+  var box = document.getElementById('outbox');
+  box.style.display = 'block';
+  box.querySelector('pre').textContent = text;
+  try { navigator.clipboard.writeText(text); box.querySelector('.note').textContent = 'Copied. Inside Claude, this goes straight to the chat.'; }
+  catch (e) { box.querySelector('.note').textContent = 'Inside Claude, this goes straight to the chat.'; }
+  box.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+};
+window.openLink = function (url) { window.open(url, '_blank', 'noopener'); };
+</script>
+</head>
+<body>
+<main>
+<p class="intro"><b>Decision Board</b> — standalone demo. Pick an answer on each card, open <b>Explain it</b> or <b>Visualise it</b>, then press <b>Send</b>. Inside Claude, Send posts the message to the chat; here it appears below and is copied to your clipboard. <a href="https://github.com/st4rkis/claude-decision-board" style="color:var(--text-accent)">Get it on GitHub</a>.</p>
+<div style="font-size:16px;line-height:1.5;color:var(--text-primary)">
+<div id="tabs" style="display:flex;gap:6px;margin-bottom:16px"></div>
+<div id="view"></div>
+<script>
+const OPEN = [{"id": "D-004", "t": "Pick the database for the booking service", "conf": "high", "ctx": "Bookings grow about 20% a month, and the prototype's single SQLite file starts failing writes under load.", "explain": "The booking service still runs on the SQLite file the prototype started with. It is fine for reads, but concurrent writes queue up and start failing once about fifty land at once, which already happens on Friday evenings.\n\nAll three routes fix Friday. They differ in how much work it is now, and how long until you have to think about it again.\n\nIn short: move to managed Postgres this week, jump to distributed SQL for multi-region, or patch SQLite and decide later.", "viz": "<svg width=\"100%\" viewBox=\"0 0 680 300\" role=\"img\"><title>Effort now versus headroom later</title><desc>Three database routes compared on migration effort today and how far each scales before the next change.</desc>\n<text class=\"th\" x=\"40\" y=\"32\">Effort now vs. headroom later</text>\n<g class=\"c-green\"><rect x=\"40\" y=\"52\" width=\"180\" height=\"150\" rx=\"12\"/><text class=\"t\" x=\"130\" y=\"80\" text-anchor=\"middle\">A · Managed Postgres</text><text class=\"ts\" x=\"130\" y=\"112\" text-anchor=\"middle\">about 1 day to move</text><text class=\"ts\" x=\"130\" y=\"134\" text-anchor=\"middle\">backups built in</text><text class=\"ts\" x=\"130\" y=\"176\" text-anchor=\"middle\">good for years</text></g>\n<g class=\"c-purple\"><rect x=\"250\" y=\"52\" width=\"180\" height=\"150\" rx=\"12\"/><text class=\"t\" x=\"340\" y=\"80\" text-anchor=\"middle\">B · Distributed SQL</text><text class=\"ts\" x=\"340\" y=\"112\" text-anchor=\"middle\">about 1 week to move</text><text class=\"ts\" x=\"340\" y=\"134\" text-anchor=\"middle\">newer tooling</text><text class=\"ts\" x=\"340\" y=\"176\" text-anchor=\"middle\">multi-region today</text></g>\n<g class=\"c-gray\"><rect x=\"460\" y=\"52\" width=\"180\" height=\"150\" rx=\"12\"/><text class=\"t\" x=\"550\" y=\"80\" text-anchor=\"middle\">C · Stay on SQLite</text><text class=\"ts\" x=\"550\" y=\"112\" text-anchor=\"middle\">nothing to move</text><text class=\"ts\" x=\"550\" y=\"134\" text-anchor=\"middle\">add WAL + a queue</text><text class=\"ts\" x=\"550\" y=\"176\" text-anchor=\"middle\">revisit at 10k a day</text></g>\n<g class=\"c-amber\"><rect x=\"40\" y=\"226\" width=\"600\" height=\"44\" rx=\"10\"/><text class=\"t\" x=\"340\" y=\"253\" text-anchor=\"middle\">Today: one SQLite file, writes start failing above ~50 at once</text></g>\n</svg>", "opts": [{"k": "A", "tag": "Recommended", "label": "Managed Postgres", "note": "Boring and proven, backups built in. About a day to migrate.", "p": "Move the booking service to managed Postgres this week. Plan the migration, keep SQLite read-only as a fallback for 7 days, then retire it.", "link": {"url": "https://www.postgresql.org/docs/current/", "label": "PostgreSQL documentation"}}, {"k": "B", "tag": "Bolder", "label": "Distributed SQL", "note": "Multi-region from day one. Newer tooling, harder to debug.", "p": "Move the booking service to a distributed SQL database now, with a multi-region setup. Write up the operational runbook before cutover.", "link": {"url": "https://en.wikipedia.org/wiki/NewSQL", "label": "What distributed SQL is"}}, {"k": "C", "tag": "Safer", "label": "Stay on SQLite for now", "note": "Turn on WAL mode and queue writes. Revisit at 10k bookings a day.", "p": "Keep SQLite: enable WAL mode, put writes behind a queue, and add an alert at 10k bookings a day so we revisit the database then.", "link": {"url": "https://www.sqlite.org/wal.html", "label": "SQLite write-ahead logging"}}]}, {"id": "D-005", "t": "How to launch v2", "conf": "high", "ctx": "v2 is feature-complete and behind a flag. The load test finishes next Friday.", "explain": "v2 is done and hidden behind a feature flag, so launching is just a question of who gets it when. The only open risk is load: the full test finishes next Friday.\n\nA staged rollout gets real traffic early while keeping any problem small. Everything can be switched off in under a minute.\n\nIn short: roll out 10% → 50% → 100% this week, give it to everyone on Monday, or wait for the load test.", "viz": "<svg width=\"100%\" viewBox=\"0 0 680 290\" role=\"img\"><title>Who has v2 each day</title><desc>Share of users on v2 across the first week under each launch route.</desc><defs><marker id=\"ah\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M2 1L8 5L2 9\" fill=\"none\" stroke=\"context-stroke\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></marker></defs>\n<text class=\"th\" x=\"40\" y=\"32\">Share of users on v2, first week</text>\n<text class=\"ts\" x=\"40\" y=\"78\">A · Staged</text>\n<g class=\"c-green\"><rect x=\"150\" y=\"60\" width=\"60\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"180\" y=\"79\" text-anchor=\"middle\">10%</text></g>\n<line x1=\"212\" y1=\"74\" x2=\"258\" y2=\"74\" stroke=\"#888780\" stroke-width=\"1.5\" marker-end=\"url(#ah)\"/>\n<g class=\"c-green\"><rect x=\"262\" y=\"60\" width=\"90\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"307\" y=\"79\" text-anchor=\"middle\">50% Wed</text></g>\n<line x1=\"354\" y1=\"74\" x2=\"400\" y2=\"74\" stroke=\"#888780\" stroke-width=\"1.5\" marker-end=\"url(#ah)\"/>\n<g class=\"c-green\"><rect x=\"404\" y=\"60\" width=\"236\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"522\" y=\"79\" text-anchor=\"middle\">100% Friday, if errors stay flat</text></g>\n<text class=\"ts\" x=\"40\" y=\"138\">B · Everyone</text>\n<g class=\"c-purple\"><rect x=\"150\" y=\"120\" width=\"490\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"395\" y=\"139\" text-anchor=\"middle\">100% Monday: fastest feedback, biggest blast radius</text></g>\n<text class=\"ts\" x=\"40\" y=\"198\">C · Wait</text>\n<g class=\"c-gray\"><rect x=\"150\" y=\"180\" width=\"300\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"300\" y=\"199\" text-anchor=\"middle\">0% while the load test runs</text></g>\n<g class=\"c-gray\"><rect x=\"460\" y=\"180\" width=\"180\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"550\" y=\"199\" text-anchor=\"middle\">launch next Monday</text></g>\n<text class=\"ts\" x=\"340\" y=\"258\" text-anchor=\"middle\">Every route can be rolled back with the feature flag in under a minute.</text>\n</svg>", "opts": [{"k": "A", "tag": "Recommended", "label": "Staged, starting Monday", "note": "10% Monday, 50% Wednesday, everyone Friday if error rates stay flat.", "p": "Launch v2 as a staged rollout: 10% Monday, 50% Wednesday, 100% Friday, each step only if error rates stay flat. Owner watches the dashboard at each step.", "link": {"url": "https://martinfowler.com/bliki/CanaryRelease.html", "label": "Canary releases"}}, {"k": "B", "tag": "Bolder", "label": "Everyone on Monday", "note": "Fastest feedback. If something breaks, it breaks for everybody.", "p": "Launch v2 to everyone on Monday. Keep the flag ready to switch off, and have the on-call engineer watch error rates all day.", "link": {"url": "https://en.wikipedia.org/wiki/Feature_toggle", "label": "Feature flags"}}, {"k": "C", "tag": "Safer", "label": "Wait for the load test", "note": "Launch a week later, with the load numbers in hand.", "p": "Hold v2 until the load test finishes next Friday, then launch the following Monday with a staged rollout.", "link": {"url": "https://en.wikipedia.org/wiki/Load_testing", "label": "Load testing"}}]}, {"id": "D-006", "t": "Remove the legacy CSV export", "conf": "medium", "ctx": "Three customers used it last month; 412 used the new export. It blocks the reporting refactor.", "explain": "The old CSV export still works, but three customers used it last month against 412 on the new one. Keeping it means the reporting refactor has to work around it.\n\nIt is low stakes either way, so there is no recommendation: this is a judgement call about those three customers.\n\nIn short: remove it next release after emailing them, remove it today, or hide it and live with the extra code.", "viz": "<svg width=\"100%\" viewBox=\"0 0 680 270\" role=\"img\"><title>Who still uses the old export</title><desc>Last month's use of the legacy CSV export compared with the new export, and what each route does to the three remaining users.</desc>\n<text class=\"th\" x=\"40\" y=\"32\">Exports last month</text>\n<g class=\"c-teal\"><rect x=\"40\" y=\"50\" width=\"520\" height=\"34\" rx=\"6\"/><text class=\"ts\" x=\"300\" y=\"72\" text-anchor=\"middle\">New export: 412 customers</text></g>\n<g class=\"c-amber\"><rect x=\"40\" y=\"94\" width=\"40\" height=\"34\" rx=\"6\"/></g>\n<text class=\"ts\" x=\"92\" y=\"116\">Legacy CSV: 3 customers, all on the annual plan</text>\n<g class=\"c-gray\"><rect x=\"40\" y=\"156\" width=\"180\" height=\"70\" rx=\"10\"/><text class=\"t\" x=\"130\" y=\"185\" text-anchor=\"middle\">A · Next release</text><text class=\"ts\" x=\"130\" y=\"207\" text-anchor=\"middle\">email the 3 first</text></g>\n<g class=\"c-gray\"><rect x=\"250\" y=\"156\" width=\"180\" height=\"70\" rx=\"10\"/><text class=\"t\" x=\"340\" y=\"185\" text-anchor=\"middle\">B · Today</text><text class=\"ts\" x=\"340\" y=\"207\" text-anchor=\"middle\">3 users find out</text></g>\n<g class=\"c-gray\"><rect x=\"460\" y=\"156\" width=\"180\" height=\"70\" rx=\"10\"/><text class=\"t\" x=\"550\" y=\"185\" text-anchor=\"middle\">C · Hide it</text><text class=\"ts\" x=\"550\" y=\"207\" text-anchor=\"middle\">code stays forever</text></g>\n<text class=\"ts\" x=\"340\" y=\"252\" text-anchor=\"middle\">Low stakes either way, which is why there is no recommendation.</text>\n</svg>", "opts": [{"k": "A", "tag": "Option", "label": "Remove it next release", "note": "Email the three customers first, with the new export's link.", "p": "Remove the legacy CSV export in the next release. Email the three customers who used it this week with a link to the new export.", "link": {"url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md", "label": "Why this card has no recommendation"}}, {"k": "B", "tag": "Bolder", "label": "Remove it today", "note": "Unblocks the refactor now. Three users find out by accident.", "p": "Remove the legacy CSV export today and unblock the reporting refactor. Reply to any support tickets with the new export's link.", "link": {"url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md", "label": "Why this card has no recommendation"}}, {"k": "C", "tag": "Safer", "label": "Keep it, hide it from the menu", "note": "No one is surprised. The code stays and the refactor works around it.", "p": "Keep the legacy CSV export but remove it from the menu. The reporting refactor keeps a compatibility path for it.", "link": {"url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md", "label": "Why this card has no recommendation"}}]}];
+const LEDGER = [["D-001", "Name for the booking service", "done", "Renamed everywhere; old URLs redirect.", "Sam"], ["D-002", "Weekly or fortnightly releases", "decided", "First weekly release next Tuesday.", "Priya"], ["D-003", "Move status page to a vendor", "postponed", "Revisit after the v2 launch.", "-"], ["D-004", "Pick the database for the booking service", "open", "-", "You"], ["D-005", "How to launch v2", "open", "-", "You"], ["D-006", "Remove the legacy CSV export", "open", "-", "You"]];
+const DOT = {open:"#EF9F27", decided:"#378ADD", done:"#639922", postponed:"#888780"};
+const SEL = {}, SENT = {}, PANEL = {}, UI = {};
+let tab = OPEN.length ? "decide" : "track";
+
+function el(tag, css, text){ const e=document.createElement(tag); if(css) e.style.cssText=css; if(text!=null) e.textContent=text; return e; }
+function icon(name){ const i=el("i","margin-right:6px"); i.className="ti ti-"+name; i.setAttribute("aria-hidden","true"); return i; }
+const isRec = (d,o) => d.conf==="high" && d.opts[0].k===o.k;
+
+function promptFor(d){
+  const s=SEL[d.id]; if(!s) return "";
+  const head="["+d.id+" · "+d.t+"]";
+  if(s.kind==="postpone") return head+" POSTPONED — not ready. Keep it open and ask me again next round.";
+  if(s.kind==="custom") return head+" CUSTOM — "+s.text;
+  const o=d.opts.find(x=>x.k===s.k);
+  return head+" DECIDED "+o.k+" ("+(isRec(d,o)?"recommended":o.tag.toLowerCase())+") — "+o.p;
+}
+
+function drawTabs(){
+  const box=document.getElementById('tabs'); box.innerHTML="";
+  [["decide","Needs you · "+OPEN.length],["track","Tracker · "+LEDGER.length]].forEach(([k,l])=>{
+    const on=tab===k, b=el("button","font:inherit;font-size:14px;padding:6px 14px;border-radius:var(--radius);cursor:pointer;"+
+      (on?"background:var(--bg-accent);border:0.5px solid var(--border-accent);color:var(--text-accent);font-weight:500"
+         :"background:transparent;border:0.5px solid var(--border);color:var(--text-secondary)"), l);
+    b.onclick=()=>{tab=k;render()}; box.appendChild(b);
+  });
+}
+
+function styleOption(d,o){
+  const u=UI[d.id].opts[o.k], s=SEL[d.id], on=s&&s.kind==="opt"&&s.k===o.k, rec=isRec(d,o);
+  u.box.style.background = on ? "var(--bg-success)" : "var(--surface-1)";
+  u.box.style.border = on||rec ? "1.5px solid var(--border-success)" : "0.5px solid var(--border)";
+  u.label.style.color = on ? "var(--text-success)" : "var(--text-primary)";
+  u.check.style.display = on ? "inline-block" : "none";
+  u.box.setAttribute("aria-pressed", on?"true":"false");
+}
+
+function refresh(d){
+  d.opts.forEach(o=>styleOption(d,o));
+  const u=UI[d.id], s=SEL[d.id], pp=s&&s.kind==="postpone";
+  u.pp.style.background = pp ? "var(--bg-success)" : "transparent";
+  u.pp.style.border = pp ? "1.5px solid var(--border-success)" : "0.5px dashed var(--border-strong)";
+  u.pp.style.color = pp ? "var(--text-success)" : "var(--text-secondary)";
+  const p=promptFor(d);
+  u.prev.style.display = p ? "block" : "none";
+  u.prevText.textContent = p;
+  u.prevTag.textContent = SENT[d.id] && SENT[d.id]!==p ? "Will replace what you sent" : (SENT[d.id]===p ? "Sent" : "Will send");
+  bar();
+}
+
+function choose(d, sel){
+  const s=SEL[d.id];
+  const same = s && sel && s.kind===sel.kind && (sel.kind!=="opt" || s.k===sel.k);
+  SEL[d.id] = same ? null : sel;              // tapping the chosen answer again clears it
+  if(sel && sel.kind!=="custom"){ UI[d.id].inp.value=""; UI[d.id].err.style.display="none"; }
+  refresh(d);
+}
+
+function togglePanel(d, which){
+  PANEL[d.id] = PANEL[d.id]===which ? null : which;
+  const u=UI[d.id], box=u.panel; box.innerHTML="";
+  [u.exBtn,u.vzBtn].forEach(b=>{ b.style.background="transparent"; b.style.color="var(--text-secondary)"; });
+  if(!PANEL[d.id]){ box.style.display="none"; return; }
+  const btn = which==="explain"?u.exBtn:u.vzBtn; btn.style.background="var(--surface-1)"; btn.style.color="var(--text-primary)";
+  box.style.display="block";
+  const head=el("div","display:flex;align-items:center;justify-content:space-between;margin-bottom:8px");
+  head.appendChild(el("span","font-size:13px;font-weight:500;color:var(--text-secondary)", which==="explain"?"In plain words":"What this looks like"));
+  const x=el("button","font:inherit;background:transparent;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:2px 4px");
+  const xi=el("i"); xi.className="ti ti-x"; x.appendChild(xi); x.setAttribute("aria-label","Close"); x.onclick=()=>togglePanel(d,which);
+  head.appendChild(x); box.appendChild(head);
+  if(which==="explain"){
+    (d.explain||"No explanation written for this one yet.").split("\n\n").forEach((para,i,a)=>{
+      const last=i===a.length-1 && a.length>1;
+      box.appendChild(el("p","margin:0 0 8px;font-size:14px;line-height:1.6;"+(last?"color:var(--text-primary);font-weight:500":"color:var(--text-secondary)"), para));
+    });
+  } else if(d.viz){
+    const v=el("div",""); v.innerHTML=d.viz; box.appendChild(v);
+  } else {
+    box.appendChild(el("p","margin:0 0 10px;font-size:14px;color:var(--text-secondary)","No picture drawn for this one yet."));
+    const ask=el("button","font:inherit;font-size:14px;cursor:pointer;padding:7px 12px;border-radius:var(--radius);background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-primary)","Ask Claude to draw it");
+    ask.onclick=()=>sendPrompt("["+d.id+" · "+d.t+"] VISUALISE — draw the problem and what each of the three routes leads to.");
+    box.appendChild(ask);
+  }
+}
+
+function card(d){
+  const u=UI[d.id]={opts:{}};
+  const c=el("div","background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px");
+  const h=el("div","display:flex;align-items:baseline;gap:10px;flex-wrap:wrap");
+  h.appendChild(el("span","font-size:13px;color:var(--text-muted)",d.id));
+  h.appendChild(el("span","font-weight:500",d.t));
+  if(d.conf!=="high") h.appendChild(el("span","font-size:12px;color:var(--text-muted)","no strong recommendation"));
+  c.appendChild(h);
+  c.appendChild(el("div","font-size:14px;color:var(--text-secondary);margin:4px 0 12px",d.ctx));
+
+  d.opts.forEach(o=>{
+    const rec=isRec(d,o);
+    const box=el("div","position:relative;cursor:pointer;margin-bottom:6px;padding:9px 12px 22px;border-radius:var(--radius);");
+    box.setAttribute("role","button"); box.tabIndex=0;
+    const top=el("div","display:flex;align-items:baseline;gap:8px;flex-wrap:wrap");
+    const check=el("i","color:var(--text-success);display:none"); check.className="ti ti-check"; check.setAttribute("aria-hidden","true");
+    top.appendChild(check);
+    top.appendChild(el("span","font-size:12px;"+(rec?"color:var(--text-success)":"color:var(--text-muted)"), rec?"★ Recommended":o.tag));
+    const label=el("span","font-size:15px;font-weight:500",o.label); top.appendChild(label);
+    box.appendChild(top);
+    box.appendChild(el("div","font-size:13px;color:var(--text-secondary);margin-top:2px;padding-right:44px",o.note));
+    const L=o.link||d.link;
+    if(L&&L.url){
+      const a=el("a","position:absolute;right:10px;bottom:5px;font-size:12px;color:var(--text-accent);text-decoration:none");
+      a.href=L.url; a.target="_blank"; a.rel="noopener"; a.title=L.label||L.url;
+      a.appendChild(document.createTextNode("Link ")); const ai=el("i"); ai.className="ti ti-external-link"; ai.setAttribute("aria-hidden","true"); a.appendChild(ai);
+      a.onclick=e=>e.stopPropagation();
+      box.appendChild(a);
+    }
+    box.onclick=()=>choose(d,{kind:"opt",k:o.k});
+    box.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); choose(d,{kind:"opt",k:o.k}); } };
+    u.opts[o.k]={box,label,check};
+    c.appendChild(box);
+  });
+
+  const acts=el("div","display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px");
+  const small="font:inherit;font-size:14px;cursor:pointer;padding:6px 12px;border-radius:var(--radius);";
+  u.pp=el("button",small); u.pp.append(icon("clock"),document.createTextNode("Postpone"));
+  u.pp.onclick=()=>choose(d,{kind:"postpone"});
+  u.exBtn=el("button",small+"background:transparent;border:0.5px solid var(--border);color:var(--text-secondary)");
+  u.exBtn.append(icon("info-circle"),document.createTextNode("Explain it"));
+  u.exBtn.onclick=()=>togglePanel(d,"explain");
+  u.vzBtn=el("button",small+"background:transparent;border:0.5px solid var(--border);color:var(--text-secondary)");
+  u.vzBtn.append(icon("chart-dots"),document.createTextNode("Visualise it"));
+  u.vzBtn.onclick=()=>togglePanel(d,"viz");
+  acts.append(u.pp,u.exBtn,u.vzBtn); c.appendChild(acts);
+
+  u.panel=el("div","display:none;background:var(--surface-1);border:0.5px solid var(--border-strong);border-radius:12px;padding:12px 14px;margin:0 0 10px");
+  c.appendChild(u.panel);
+
+  u.inp=el("input","width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-1);color:var(--text-primary)");
+  u.inp.placeholder="Enter custom reply…";
+  u.err=el("div","font-size:13px;color:var(--text-danger);margin-top:4px;display:none");
+  u.inp.oninput=()=>{ u.err.style.display="none"; const v=u.inp.value.trim();
+    if(v) SEL[d.id]={kind:"custom",text:v}; else if(SEL[d.id]&&SEL[d.id].kind==="custom") SEL[d.id]=null;
+    refresh(d); };
+  c.append(u.inp,u.err);
+
+  u.prev=el("div","display:none;margin-top:10px;padding:8px 10px;border-radius:var(--radius);background:var(--surface-1);border:0.5px solid var(--border)");
+  u.prevTag=el("div","font-size:12px;color:var(--text-muted);margin-bottom:2px","Will send");
+  u.prevText=el("div","font-family:var(--font-mono);font-size:12px;line-height:1.5;color:var(--text-secondary);word-break:break-word");
+  u.prev.append(u.prevTag,u.prevText); c.appendChild(u.prev);
+
+  if(SEL[d.id]&&SEL[d.id].kind==="custom") u.inp.value=SEL[d.id].text;
+  if(PANEL[d.id]){ const w=PANEL[d.id]; PANEL[d.id]=null; setTimeout(()=>togglePanel(d,w)); }
+  return c;
+}
+
+function pending(){ return OPEN.filter(d=>{ const p=promptFor(d); return p && SENT[d.id]!==p; }); }
+
+function bar(){
+  const b=UI.bar; if(!b) return;
+  const n=pending().length, answered=OPEN.filter(d=>SEL[d.id]).length;
+  b.count.textContent = answered+" of "+OPEN.length+" answered" + (n&&Object.keys(SENT).length? " · "+n+" changed" : "");
+  b.send.textContent = n>1 ? "Send "+n+" decisions" : "Send";
+  b.err.style.display="none";
+}
+
+function sendAll(){
+  const b=UI.bar, list=pending();
+  if(!list.length){
+    b.err.textContent = OPEN.some(d=>SEL[d.id]) ? "Nothing has changed since you last sent." : "Pick at least one answer first.";
+    b.err.style.display="block"; return;
+  }
+  const lines=list.map(d=>promptFor(d)+(SENT[d.id]?" (This replaces my earlier answer.)":""));
+  sendPrompt((lines.length>1?"Decisions from the board:\n":"")+lines.join("\n"));
+  list.forEach(d=>{ SENT[d.id]=promptFor(d); refresh(d); });
+  b.done.textContent="Sent. Change any answer and send again to update it."; b.done.style.display="block";
+  bar();
+}
+
+function tracker(){
+  const w=el("div","background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:4px 0");
+  LEDGER.forEach((r,i)=>{ const [id,t,st,out,own]=r;
+    const row=el("div","display:flex;align-items:center;gap:10px;padding:9px 14px;"+(i<LEDGER.length-1?"border-bottom:0.5px solid var(--border)":""));
+    row.appendChild(el("span","width:8px;height:8px;border-radius:50%;background:"+DOT[st]+";flex:none"));
+    row.appendChild(el("span","font-size:12px;color:var(--text-muted);width:44px;flex:none",id));
+    const mid=el("span","flex:1;min-width:0"); mid.appendChild(el("span","font-size:14px;font-weight:500;display:block",t));
+    mid.appendChild(el("span","display:block;font-size:13px;color:var(--text-secondary)",st==="open"?"waiting on you":out));
+    row.appendChild(mid);
+    const rt=el("span","font-size:12px;color:var(--text-muted);flex:none;text-align:right"); rt.append(document.createTextNode(st),el("br"),document.createTextNode(own));
+    row.appendChild(rt); w.appendChild(row); });
+  const leg=el("div","display:flex;gap:14px;font-size:12px;color:var(--text-muted);margin-top:10px");
+  Object.entries(DOT).forEach(([k,c])=>{ const s=el("span"); s.append(el("span","display:inline-block;width:7px;height:7px;border-radius:50%;background:"+c+";margin-right:5px"),document.createTextNode(k)); leg.appendChild(s); });
+  const f=el("div"); f.append(w,leg); return f;
+}
+
+function render(){
+  drawTabs(); const v=document.getElementById('view'); v.innerHTML=""; UI.bar=null;
+  if(tab!=="decide"){ v.appendChild(tracker()); return; }
+  OPEN.forEach(d=>v.appendChild(card(d)));
+  const b=UI.bar={}, row=el("div","display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:12px;background:var(--surface-1);border:0.5px solid var(--border)");
+  b.count=el("span","font-size:14px;color:var(--text-secondary)");
+  b.send=el("button","font:inherit;font-size:14px;font-weight:500;cursor:pointer;padding:8px 18px;border-radius:var(--radius);background:var(--bg-success);border:1.5px solid var(--border-success);color:var(--text-success)","Send");
+  b.send.onclick=sendAll; row.append(b.count,b.send);
+  b.err=el("div","font-size:13px;color:var(--text-danger);margin-top:6px;display:none");
+  b.done=el("div","font-size:13px;color:var(--text-secondary);margin-top:6px;display:none");
+  v.append(row,b.err,b.done);
+  OPEN.forEach(d=>refresh(d));
+}
+render();
+</script>
+</div>
+
+<div id="outbox"><div style="font-size:13px;font-weight:500;color:var(--text-secondary)">Message that would be sent</div><pre></pre><span class="note" style="font-size:12px;color:var(--text-muted);margin-right:10px"></span><button onclick="navigator.clipboard.writeText(this.parentNode.querySelector('pre').textContent)">Copy again</button></div>
+</main>
+</body>
+</html>

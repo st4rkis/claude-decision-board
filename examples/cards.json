@@ -1,0 +1,131 @@
+[
+ {
+  "id": "D-004",
+  "t": "Pick the database for the booking service",
+  "conf": "high",
+  "ctx": "Bookings grow about 20% a month, and the prototype's single SQLite file starts failing writes under load.",
+  "explain": "The booking service still runs on the SQLite file the prototype started with. It is fine for reads, but concurrent writes queue up and start failing once about fifty land at once, which already happens on Friday evenings.\n\nAll three routes fix Friday. They differ in how much work it is now, and how long until you have to think about it again.\n\nIn short: move to managed Postgres this week, jump to distributed SQL for multi-region, or patch SQLite and decide later.",
+  "viz": "<svg width=\"100%\" viewBox=\"0 0 680 300\" role=\"img\"><title>Effort now versus headroom later</title><desc>Three database routes compared on migration effort today and how far each scales before the next change.</desc>\n<text class=\"th\" x=\"40\" y=\"32\">Effort now vs. headroom later</text>\n<g class=\"c-green\"><rect x=\"40\" y=\"52\" width=\"180\" height=\"150\" rx=\"12\"/><text class=\"t\" x=\"130\" y=\"80\" text-anchor=\"middle\">A · Managed Postgres</text><text class=\"ts\" x=\"130\" y=\"112\" text-anchor=\"middle\">about 1 day to move</text><text class=\"ts\" x=\"130\" y=\"134\" text-anchor=\"middle\">backups built in</text><text class=\"ts\" x=\"130\" y=\"176\" text-anchor=\"middle\">good for years</text></g>\n<g class=\"c-purple\"><rect x=\"250\" y=\"52\" width=\"180\" height=\"150\" rx=\"12\"/><text class=\"t\" x=\"340\" y=\"80\" text-anchor=\"middle\">B · Distributed SQL</text><text class=\"ts\" x=\"340\" y=\"112\" text-anchor=\"middle\">about 1 week to move</text><text class=\"ts\" x=\"340\" y=\"134\" text-anchor=\"middle\">newer tooling</text><text class=\"ts\" x=\"340\" y=\"176\" text-anchor=\"middle\">multi-region today</text></g>\n<g class=\"c-gray\"><rect x=\"460\" y=\"52\" width=\"180\" height=\"150\" rx=\"12\"/><text class=\"t\" x=\"550\" y=\"80\" text-anchor=\"middle\">C · Stay on SQLite</text><text class=\"ts\" x=\"550\" y=\"112\" text-anchor=\"middle\">nothing to move</text><text class=\"ts\" x=\"550\" y=\"134\" text-anchor=\"middle\">add WAL + a queue</text><text class=\"ts\" x=\"550\" y=\"176\" text-anchor=\"middle\">revisit at 10k a day</text></g>\n<g class=\"c-amber\"><rect x=\"40\" y=\"226\" width=\"600\" height=\"44\" rx=\"10\"/><text class=\"t\" x=\"340\" y=\"253\" text-anchor=\"middle\">Today: one SQLite file, writes start failing above ~50 at once</text></g>\n</svg>",
+  "opts": [
+   {
+    "k": "A",
+    "tag": "Recommended",
+    "label": "Managed Postgres",
+    "note": "Boring and proven, backups built in. About a day to migrate.",
+    "p": "Move the booking service to managed Postgres this week. Plan the migration, keep SQLite read-only as a fallback for 7 days, then retire it.",
+    "link": {
+     "url": "https://www.postgresql.org/docs/current/",
+     "label": "PostgreSQL documentation"
+    }
+   },
+   {
+    "k": "B",
+    "tag": "Bolder",
+    "label": "Distributed SQL",
+    "note": "Multi-region from day one. Newer tooling, harder to debug.",
+    "p": "Move the booking service to a distributed SQL database now, with a multi-region setup. Write up the operational runbook before cutover.",
+    "link": {
+     "url": "https://en.wikipedia.org/wiki/NewSQL",
+     "label": "What distributed SQL is"
+    }
+   },
+   {
+    "k": "C",
+    "tag": "Safer",
+    "label": "Stay on SQLite for now",
+    "note": "Turn on WAL mode and queue writes. Revisit at 10k bookings a day.",
+    "p": "Keep SQLite: enable WAL mode, put writes behind a queue, and add an alert at 10k bookings a day so we revisit the database then.",
+    "link": {
+     "url": "https://www.sqlite.org/wal.html",
+     "label": "SQLite write-ahead logging"
+    }
+   }
+  ]
+ },
+ {
+  "id": "D-005",
+  "t": "How to launch v2",
+  "conf": "high",
+  "ctx": "v2 is feature-complete and behind a flag. The load test finishes next Friday.",
+  "explain": "v2 is done and hidden behind a feature flag, so launching is just a question of who gets it when. The only open risk is load: the full test finishes next Friday.\n\nA staged rollout gets real traffic early while keeping any problem small. Everything can be switched off in under a minute.\n\nIn short: roll out 10% → 50% → 100% this week, give it to everyone on Monday, or wait for the load test.",
+  "viz": "<svg width=\"100%\" viewBox=\"0 0 680 290\" role=\"img\"><title>Who has v2 each day</title><desc>Share of users on v2 across the first week under each launch route.</desc><defs><marker id=\"ah\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M2 1L8 5L2 9\" fill=\"none\" stroke=\"context-stroke\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></marker></defs>\n<text class=\"th\" x=\"40\" y=\"32\">Share of users on v2, first week</text>\n<text class=\"ts\" x=\"40\" y=\"78\">A · Staged</text>\n<g class=\"c-green\"><rect x=\"150\" y=\"60\" width=\"60\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"180\" y=\"79\" text-anchor=\"middle\">10%</text></g>\n<line x1=\"212\" y1=\"74\" x2=\"258\" y2=\"74\" stroke=\"#888780\" stroke-width=\"1.5\" marker-end=\"url(#ah)\"/>\n<g class=\"c-green\"><rect x=\"262\" y=\"60\" width=\"90\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"307\" y=\"79\" text-anchor=\"middle\">50% Wed</text></g>\n<line x1=\"354\" y1=\"74\" x2=\"400\" y2=\"74\" stroke=\"#888780\" stroke-width=\"1.5\" marker-end=\"url(#ah)\"/>\n<g class=\"c-green\"><rect x=\"404\" y=\"60\" width=\"236\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"522\" y=\"79\" text-anchor=\"middle\">100% Friday, if errors stay flat</text></g>\n<text class=\"ts\" x=\"40\" y=\"138\">B · Everyone</text>\n<g class=\"c-purple\"><rect x=\"150\" y=\"120\" width=\"490\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"395\" y=\"139\" text-anchor=\"middle\">100% Monday: fastest feedback, biggest blast radius</text></g>\n<text class=\"ts\" x=\"40\" y=\"198\">C · Wait</text>\n<g class=\"c-gray\"><rect x=\"150\" y=\"180\" width=\"300\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"300\" y=\"199\" text-anchor=\"middle\">0% while the load test runs</text></g>\n<g class=\"c-gray\"><rect x=\"460\" y=\"180\" width=\"180\" height=\"28\" rx=\"6\"/><text class=\"ts\" x=\"550\" y=\"199\" text-anchor=\"middle\">launch next Monday</text></g>\n<text class=\"ts\" x=\"340\" y=\"258\" text-anchor=\"middle\">Every route can be rolled back with the feature flag in under a minute.</text>\n</svg>",
+  "opts": [
+   {
+    "k": "A",
+    "tag": "Recommended",
+    "label": "Staged, starting Monday",
+    "note": "10% Monday, 50% Wednesday, everyone Friday if error rates stay flat.",
+    "p": "Launch v2 as a staged rollout: 10% Monday, 50% Wednesday, 100% Friday, each step only if error rates stay flat. Owner watches the dashboard at each step.",
+    "link": {
+     "url": "https://martinfowler.com/bliki/CanaryRelease.html",
+     "label": "Canary releases"
+    }
+   },
+   {
+    "k": "B",
+    "tag": "Bolder",
+    "label": "Everyone on Monday",
+    "note": "Fastest feedback. If something breaks, it breaks for everybody.",
+    "p": "Launch v2 to everyone on Monday. Keep the flag ready to switch off, and have the on-call engineer watch error rates all day.",
+    "link": {
+     "url": "https://en.wikipedia.org/wiki/Feature_toggle",
+     "label": "Feature flags"
+    }
+   },
+   {
+    "k": "C",
+    "tag": "Safer",
+    "label": "Wait for the load test",
+    "note": "Launch a week later, with the load numbers in hand.",
+    "p": "Hold v2 until the load test finishes next Friday, then launch the following Monday with a staged rollout.",
+    "link": {
+     "url": "https://en.wikipedia.org/wiki/Load_testing",
+     "label": "Load testing"
+    }
+   }
+  ]
+ },
+ {
+  "id": "D-006",
+  "t": "Remove the legacy CSV export",
+  "conf": "medium",
+  "ctx": "Three customers used it last month; 412 used the new export. It blocks the reporting refactor.",
+  "explain": "The old CSV export still works, but three customers used it last month against 412 on the new one. Keeping it means the reporting refactor has to work around it.\n\nIt is low stakes either way, so there is no recommendation: this is a judgement call about those three customers.\n\nIn short: remove it next release after emailing them, remove it today, or hide it and live with the extra code.",
+  "viz": "<svg width=\"100%\" viewBox=\"0 0 680 270\" role=\"img\"><title>Who still uses the old export</title><desc>Last month's use of the legacy CSV export compared with the new export, and what each route does to the three remaining users.</desc>\n<text class=\"th\" x=\"40\" y=\"32\">Exports last month</text>\n<g class=\"c-teal\"><rect x=\"40\" y=\"50\" width=\"520\" height=\"34\" rx=\"6\"/><text class=\"ts\" x=\"300\" y=\"72\" text-anchor=\"middle\">New export: 412 customers</text></g>\n<g class=\"c-amber\"><rect x=\"40\" y=\"94\" width=\"40\" height=\"34\" rx=\"6\"/></g>\n<text class=\"ts\" x=\"92\" y=\"116\">Legacy CSV: 3 customers, all on the annual plan</text>\n<g class=\"c-gray\"><rect x=\"40\" y=\"156\" width=\"180\" height=\"70\" rx=\"10\"/><text class=\"t\" x=\"130\" y=\"185\" text-anchor=\"middle\">A · Next release</text><text class=\"ts\" x=\"130\" y=\"207\" text-anchor=\"middle\">email the 3 first</text></g>\n<g class=\"c-gray\"><rect x=\"250\" y=\"156\" width=\"180\" height=\"70\" rx=\"10\"/><text class=\"t\" x=\"340\" y=\"185\" text-anchor=\"middle\">B · Today</text><text class=\"ts\" x=\"340\" y=\"207\" text-anchor=\"middle\">3 users find out</text></g>\n<g class=\"c-gray\"><rect x=\"460\" y=\"156\" width=\"180\" height=\"70\" rx=\"10\"/><text class=\"t\" x=\"550\" y=\"185\" text-anchor=\"middle\">C · Hide it</text><text class=\"ts\" x=\"550\" y=\"207\" text-anchor=\"middle\">code stays forever</text></g>\n<text class=\"ts\" x=\"340\" y=\"252\" text-anchor=\"middle\">Low stakes either way, which is why there is no recommendation.</text>\n</svg>",
+  "opts": [
+   {
+    "k": "A",
+    "tag": "Option",
+    "label": "Remove it next release",
+    "note": "Email the three customers first, with the new export's link.",
+    "p": "Remove the legacy CSV export in the next release. Email the three customers who used it this week with a link to the new export.",
+    "link": {
+     "url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md",
+     "label": "Why this card has no recommendation"
+    }
+   },
+   {
+    "k": "B",
+    "tag": "Bolder",
+    "label": "Remove it today",
+    "note": "Unblocks the refactor now. Three users find out by accident.",
+    "p": "Remove the legacy CSV export today and unblock the reporting refactor. Reply to any support tickets with the new export's link.",
+    "link": {
+     "url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md",
+     "label": "Why this card has no recommendation"
+    }
+   },
+   {
+    "k": "C",
+    "tag": "Safer",
+    "label": "Keep it, hide it from the menu",
+    "note": "No one is surprised. The code stays and the refactor works around it.",
+    "p": "Keep the legacy CSV export but remove it from the menu. The reporting refactor keeps a compatibility path for it.",
+    "link": {
+     "url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md",
+     "label": "Why this card has no recommendation"
+    }
+   }
+  ]
+ }
+]

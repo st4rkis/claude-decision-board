@@ -1,0 +1,48 @@
+{
+  "about": "Example decision ledger. One entry per decision; statuses open, decided, done, postponed. Append, never rewrite history.",
+  "next_id": 7,
+  "decisions": [
+    {
+      "id": "D-001",
+      "title": "Name for the booking service",
+      "status": "done",
+      "choice": "A - Bookkeeper",
+      "outcome": "Renamed everywhere; old URLs redirect.",
+      "owner": "Sam"
+    },
+    {
+      "id": "D-002",
+      "title": "Weekly or fortnightly releases",
+      "status": "decided",
+      "choice": "A - weekly, Tuesdays",
+      "outcome": "First weekly release next Tuesday.",
+      "owner": "Priya"
+    },
+    {
+      "id": "D-003",
+      "title": "Move status page to a vendor",
+      "status": "postponed",
+      "choice": "postponed",
+      "outcome": "Revisit after the v2 launch.",
+      "owner": "-"
+    },
+    {
+      "id": "D-004",
+      "title": "Pick the database for the booking service",
+      "status": "open",
+      "owner": "You"
+    },
+    {
+      "id": "D-005",
+      "title": "How to launch v2",
+      "status": "open",
+      "owner": "You"
+    },
+    {
+      "id": "D-006",
+      "title": "Remove the legacy CSV export",
+      "status": "open",
+      "owner": "You"
+    }
+  ]
+}
