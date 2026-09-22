@@ -145,12 +145,12 @@ a{color:var(--text-accent)}
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="eyebrow">Open source · MIT · for Claude</div>
+    <div class="eyebrow">Open source · MIT · for AI agents</div>
     <h1>Decision Board</h1>
     <p>An AI agent needs decisions from you. Instead of a wall of text, it hands you three routes, one honest recommendation and one Send. Watch it being built, and make the calls yourself.</p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/st4rkis/claude-decision-board"><i class="ti ti-brand-github" aria-hidden="true"></i>Get it on GitHub</a>
-      <a class="btn" href="https://github.com/st4rkis/claude-decision-board/blob/main/PROMPT.md"><i class="ti ti-copy" aria-hidden="true"></i>Install prompt</a>
+      <a class="btn primary" href="https://github.com/st4rkis/decision-board"><i class="ti ti-brand-github" aria-hidden="true"></i>Get it on GitHub</a>
+      <a class="btn" href="https://github.com/st4rkis/decision-board/blob/main/PROMPT.md"><i class="ti ti-copy" aria-hidden="true"></i>Install prompt</a>
     </div>
   </header>
 
@@ -167,12 +167,12 @@ a{color:var(--text-accent)}
     <div class="inputbar"><span class="gt">›</span><div id="input" class="idle"></div><kbd>⏎</kbd></div>
   </section>
 
-  <p class="foot">Simulated session: the steps, files and checks are the real ones from building this tool, shortened.<br>A community project, not affiliated with Anthropic.</p>
+  <p class="foot">Simulated session: the steps, files and checks are the real ones from building this tool, shortened.<br>Created by Akis Stark.</p>
 </div>
 
 <script>
 /* ============================ content ============================ */
-const REPO = "https://github.com/st4rkis/claude-decision-board";
+const REPO = "https://github.com/st4rkis/decision-board";
 const SPEC = REPO + "/blob/main/docs/SPEC.md";
 const PROMPT_TEXT = "I want a visual, easy tool embedded in your answers instead of long replies: simple answer buttons. Pick the 3 best options. The first is highlighted as your recommendation, but only when you're confident; one bolder, one more conservative. Add a 4th: postpone, ask me again later. Underneath, an empty box to enter a custom reply. Results should come out as prompts, ready to execute. And a tracker of all my decisions, in the chat.\n\nAdd it to memory and make it a golden standard. Can you do this?";
 
@@ -201,7 +201,7 @@ const VIZ_REACH = `<svg width="100%" viewBox="0 0 680 230" role="img"><title>Who
 <g class="c-gray"><rect x="460" y="48" width="180" height="120" rx="12"/><text class="t" x="550" y="80" text-anchor="middle">C · This project</text><text class="ts" x="550" y="112" text-anchor="middle">no memory</text><text class="ts" x="550" y="134" text-anchor="middle">nothing changes elsewhere</text></g>
 <text class="ts" x="340" y="205" text-anchor="middle">All three build the tool. They differ in who can use it next.</text></svg>`;
 
-const VIZ_NEXT = `<svg width="100%" viewBox="0 0 680 150" role="img"><title>From one paste to every session</title><desc>Paste the install prompt, Claude saves it to memory, and every later session uses the board.</desc>${AH}
+const VIZ_NEXT = `<svg width="100%" viewBox="0 0 680 150" role="img"><title>From one paste to every session</title><desc>Paste the install prompt, the assistant saves it to memory, and every later session uses the board.</desc>${AH}
 ${box("gray",40,50,130,44,"PROMPT.md")}${arrow(172,72,196,72)}${box("gray",200,50,130,44,"Paste once")}${arrow(332,72,356,72)}${box("purple",360,50,130,44,"Saved to memory")}${arrow(492,72,516,72)}${box("green",520,50,120,44,"Every session")}
 <text class="ts" x="340" y="128" text-anchor="middle">About thirty seconds. Nothing to install.</text></svg>`;
 
@@ -226,7 +226,7 @@ const CARDS_1 = [
 const CARDS_2 = [
  {id:"D-003",t:"Make it the golden standard?",conf:"high",
   ctx:"The tool works and the checks pass. Now: who gets it?",
-  explain:"Saving it to memory makes every future session ask for decisions this way, without being told again.\n\nPublishing it as well, with a public repo and a one-paste install prompt, lets anyone teach it to their own Claude in thirty seconds.\n\nIn short: make it your standard, make it everyone's, or keep it to this project.",
+  explain:"Saving it to memory makes every future session ask for decisions this way, without being told again.\n\nPublishing it as well, with a public repo and a one-paste install prompt, lets anyone teach it to their own AI assistant in thirty seconds.\n\nIn short: make it your standard, make it everyone's, or keep it to this project.",
   viz:VIZ_REACH,
   opts:[
    {k:"A",tag:"Recommended",label:"Save it as my golden standard",note:"Every session uses it from now on, without being asked.",p:"Save the Decision Board to memory as the golden standard for every session.",link:REPO+"/blob/main/PROMPT.md"},
@@ -235,10 +235,10 @@ const CARDS_2 = [
 ];
 const CARD_NEXT = {id:"D-004",t:"Where will you use it first?",conf:"high",
   ctx:"This is the tool you just designed. Try it: pick, open Explain or Visualise, then Send.",
-  explain:"The Decision Board works anywhere Claude can show a widget, and falls back to a plain multiple-choice question anywhere else.\n\nThe install prompt teaches it to Claude in one paste; the repo has the widget, a small renderer and a worked example.\n\nIn short: install it in your next session, share it with your team, or read the code first.",
+  explain:"The Decision Board works anywhere an AI chat can show a widget, and falls back to a plain multiple-choice question anywhere else.\n\nThe install prompt teaches it to your assistant in one paste; the repo has the widget, a small renderer and a worked example.\n\nIn short: install it in your next session, share it with your team, or read the code first.",
   viz:VIZ_NEXT,
   opts:[
-   {k:"A",tag:"Recommended",label:"In my next Claude session",note:"Paste the install prompt once. Claude remembers it.",p:"Install the Decision Board in my next session from PROMPT.md and save it as my standard.",link:REPO+"/blob/main/PROMPT.md"},
+   {k:"A",tag:"Recommended",label:"In my next AI session",note:"Paste the install prompt once. Your assistant remembers it.",p:"Install the Decision Board in my next session from PROMPT.md and save it as my standard.",link:REPO+"/blob/main/PROMPT.md"},
    {k:"B",tag:"Bolder",label:"Across my whole team",note:"Share the repo. Everyone installs it in thirty seconds.",p:"Share the Decision Board repo with the team and have everyone install it this week.",link:REPO},
    {k:"C",tag:"Safer",label:"Read the code first",note:"One HTML file, one small script, no dependencies.",p:"Walk me through board-template.html and fill.py before I install anything.",link:REPO+"/blob/main/board/board-template.html"}]};
 
@@ -475,11 +475,11 @@ async function story(run){
   ], run, "Tested");
   await tool("Bash","python3 tools/fill.py examples/cards.json --standalone","board rendered · 3 cards · tracker drawn from the ledger", run, 900);
   await tool("Bash","run the interaction checks","9 passed · 0 failed", run, 1200);
-  if(reach!=="C") await tool("Write","~/.claude/memory/decision_board_standard.md","saved · the golden standard for every session", run, 900);
-  else await tool("Write",".claude/project-notes.md","enabled for this project only", run, 900);
+  if(reach!=="C") await tool("Write","memory/decision_board_standard.md","saved · the golden standard for every session", run, 900);
+  else await tool("Write","project-notes.md","enabled for this project only", run, 900);
   if(reach==="B"){
-    await tool("Write","PROMPT.md","the install prompt · one paste teaches it to any Claude", run, 800);
-    await tool("Bash","gh repo create claude-decision-board --public --push","published · MIT licence", run, 1300);
+    await tool("Write","PROMPT.md","the install prompt · one paste teaches it to any AI assistant", run, 800);
+    await tool("Bash","gh repo create decision-board --public --push","published · MIT licence", run, 1300);
   }
 
   const outro={A:"It's saved as your golden standard: from now on, every session asks you for decisions this way.",

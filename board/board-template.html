@@ -1,10 +1,10 @@
 <!--
-  DECISION BOARD v2 — https://github.com/st4rkis/claude-decision-board (MIT).
+  DECISION BOARD v2 — https://github.com/st4rkis/decision-board (MIT).
   Render with tools/fill.py from a cards file + a ledger. Do not restyle: same buttons, same order, same colours.
 
   OPEN card: { id, t: title, conf: "high"|"medium", ctx: one line,
                explain: "short explanation\n\nIn short: one-line summary",
-               viz: "<svg …>" (optional — without it, Visualise asks Claude to draw one),
+               viz: "<svg …>" (optional — without it, Visualise asks the assistant to draw one),
                link: {url, label} (optional card-level fallback),
                opts: [ {k:"A", tag:"Recommended", label, note, p: prompt, link:{url,label}},
                        {k:"B", tag:"Bolder", …}, {k:"C", tag:"Safer", …} ] }
@@ -98,7 +98,7 @@ function togglePanel(d, which){
     const v=el("div",""); v.innerHTML=d.viz; box.appendChild(v);
   } else {
     box.appendChild(el("p","margin:0 0 10px;font-size:14px;color:var(--text-secondary)","No picture drawn for this one yet."));
-    const ask=el("button","font:inherit;font-size:14px;cursor:pointer;padding:7px 12px;border-radius:var(--radius);background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-primary)","Ask Claude to draw it");
+    const ask=el("button","font:inherit;font-size:14px;cursor:pointer;padding:7px 12px;border-radius:var(--radius);background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-primary)","Ask the assistant to draw it");
     ask.onclick=()=>sendPrompt("["+d.id+" · "+d.t+"] VISUALISE — draw the problem and what each of the three routes leads to.");
     box.appendChild(ask);
   }

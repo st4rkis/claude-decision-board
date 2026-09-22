@@ -100,7 +100,7 @@
     "note": "Email the three customers first, with the new export's link.",
     "p": "Remove the legacy CSV export in the next release. Email the three customers who used it this week with a link to the new export.",
     "link": {
-     "url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md",
+     "url": "https://github.com/st4rkis/decision-board/blob/main/docs/SPEC.md",
      "label": "Why this card has no recommendation"
     }
    },
@@ -111,7 +111,7 @@
     "note": "Unblocks the refactor now. Three users find out by accident.",
     "p": "Remove the legacy CSV export today and unblock the reporting refactor. Reply to any support tickets with the new export's link.",
     "link": {
-     "url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md",
+     "url": "https://github.com/st4rkis/decision-board/blob/main/docs/SPEC.md",
      "label": "Why this card has no recommendation"
     }
    },
@@ -122,7 +122,7 @@
     "note": "No one is surprised. The code stays and the refactor works around it.",
     "p": "Keep the legacy CSV export but remove it from the menu. The reporting refactor keeps a compatibility path for it.",
     "link": {
-     "url": "https://github.com/st4rkis/claude-decision-board/blob/main/docs/SPEC.md",
+     "url": "https://github.com/st4rkis/decision-board/blob/main/docs/SPEC.md",
      "label": "Why this card has no recommendation"
     }
    }

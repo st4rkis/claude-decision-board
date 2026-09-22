@@ -25,14 +25,14 @@ One **Send** at the bottom sends every answered card as a single message. Change
 
 ## Quick start
 
-### 1. Teach it to Claude (30 seconds)
+### 1. Teach it to your AI assistant (30 seconds)
 
-Open [`PROMPT.md`](PROMPT.md), copy everything below its line, and paste it into a Claude chat. Claude saves the standard to its memory and uses a Decision Board from then on, whenever it needs a decision from you.
+Open [`PROMPT.md`](PROMPT.md), copy everything below its line, and paste it into your AI assistant's chat. The assistant saves the standard to its memory and uses a Decision Board from then on, whenever it needs a decision from you.
 
-If your Claude can read web pages, this one line is enough:
+If your assistant can read web pages, this one line is enough:
 
 ```
-Read https://github.com/st4rkis/claude-decision-board/blob/main/PROMPT.md and follow the instructions below its line. Save the standard to your memory, then confirm in one line.
+Read https://github.com/st4rkis/decision-board/blob/main/PROMPT.md and follow the instructions below its line. Save the standard to your memory, then confirm in one line.
 ```
 
 ### 2. Try it in a browser
@@ -46,7 +46,7 @@ Read https://github.com/st4rkis/claude-decision-board/blob/main/PROMPT.md and fo
 python3 tools/fill.py examples/cards.json --ledger examples/ledger.json > board.html
 ```
 
-That produces the widget fragment a Claude client renders inline. Add `--standalone` for a complete page that runs in any browser. Python 3 standard library only — nothing to install.
+That produces the widget fragment an AI chat client renders inline. Add `--standalone` for a complete page that runs in any browser. Python 3 standard library only — nothing to install.
 
 The example prints one warning on purpose: `D-003` is postponed in the ledger but has no card this round. That's the safety net that stops a postponed decision from being quietly forgotten.
 
@@ -67,7 +67,7 @@ The `[D-nnn · title]` prefix is how the assistant recognises your decision. It 
 
 | Path | What it is |
 |---|---|
-| [`PROMPT.md`](PROMPT.md) | The install prompt. Paste it into Claude. |
+| [`PROMPT.md`](PROMPT.md) | The install prompt. Paste it into your AI assistant. |
 | [`board/board-template.html`](board/board-template.html) | The widget: one self-contained HTML fragment. |
 | [`tools/fill.py`](tools/fill.py) | Fills the template from your cards and ledger. |
 | [`examples/`](examples) | A complete example: three cards with pictures, and a ledger. |
@@ -98,9 +98,9 @@ The `[D-nnn · title]` prefix is how the assistant recognises your decision. It 
 
 ## Where it runs
 
-- **Inside Claude**, in clients that can render interactive visuals inline. Send posts straight to the chat.
+- **Inside an AI chat**, in clients that can render interactive visuals inline. Send posts straight to the chat.
 - **In any browser**, through the standalone page.
-- **Anywhere else** — a terminal session, a headless agent — the install prompt tells Claude to fall back to a multiple-choice question with the same three routes, Postpone, and the same reply format.
+- **Anywhere else** — a terminal session, a headless agent — the install prompt tells the assistant to fall back to a multiple-choice question with the same three routes, Postpone, and the same reply format.
 
 ## Share it
 
@@ -108,4 +108,4 @@ MIT licensed. Use it, fork it, change the colours, put it in your own tools. If 
 
 ---
 
-A community project, not affiliated with Anthropic. Created by [@st4rkis](https://github.com/st4rkis).
+Created by [Akis Stark](https://github.com/st4rkis).

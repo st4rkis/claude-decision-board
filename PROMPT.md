@@ -1,12 +1,12 @@
 # Install prompt
 
-Paste everything below the line into a Claude session. Claude will learn the Decision Board,
+Paste everything below the line into your AI assistant. It will learn the Decision Board,
 save it to its memory, and use it from then on whenever it needs decisions from you.
 
-Shorter option, for a Claude that can read web pages:
+Shorter option, for an assistant that can read web pages:
 
 ```
-Read https://github.com/st4rkis/claude-decision-board/blob/main/PROMPT.md and follow the
+Read https://github.com/st4rkis/decision-board/blob/main/PROMPT.md and follow the
 instructions below its line. Save the standard to your memory, then confirm in one line.
 ```
 
@@ -14,7 +14,7 @@ instructions below its line. Save the standard to your memory, then confirm in o
 
 From now on, whenever you need decisions from me, present them as a **Decision Board** instead of
 a list of questions or options in prose. Save this whole instruction to your memory as a standing
-preference (in Claude Code: a memory entry, or my CLAUDE.md; in the Claude apps: your memory), then
+preference (in a coding agent: a memory entry or the project's instructions file; in a chat app: your memory), then
 reply with one line confirming it is saved. Don't build a board until you actually need a decision.
 
 ## What a Decision Board is
@@ -85,12 +85,12 @@ as the custom reply. Keep the same IDs and the same reply format.
 
 ```html
 <!--
-  DECISION BOARD v2 — https://github.com/st4rkis/claude-decision-board (MIT).
+  DECISION BOARD v2 — https://github.com/st4rkis/decision-board (MIT).
   Render with tools/fill.py from a cards file + a ledger. Do not restyle: same buttons, same order, same colours.
 
   OPEN card: { id, t: title, conf: "high"|"medium", ctx: one line,
                explain: "short explanation\n\nIn short: one-line summary",
-               viz: "<svg …>" (optional — without it, Visualise asks Claude to draw one),
+               viz: "<svg …>" (optional — without it, Visualise asks the assistant to draw one),
                link: {url, label} (optional card-level fallback),
                opts: [ {k:"A", tag:"Recommended", label, note, p: prompt, link:{url,label}},
                        {k:"B", tag:"Bolder", …}, {k:"C", tag:"Safer", …} ] }
@@ -184,7 +184,7 @@ function togglePanel(d, which){
     const v=el("div",""); v.innerHTML=d.viz; box.appendChild(v);
   } else {
     box.appendChild(el("p","margin:0 0 10px;font-size:14px;color:var(--text-secondary)","No picture drawn for this one yet."));
-    const ask=el("button","font:inherit;font-size:14px;cursor:pointer;padding:7px 12px;border-radius:var(--radius);background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-primary)","Ask Claude to draw it");
+    const ask=el("button","font:inherit;font-size:14px;cursor:pointer;padding:7px 12px;border-radius:var(--radius);background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-primary)","Ask the assistant to draw it");
     ask.onclick=()=>sendPrompt("["+d.id+" · "+d.t+"] VISUALISE — draw the problem and what each of the three routes leads to.");
     box.appendChild(ask);
   }

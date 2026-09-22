@@ -69,7 +69,7 @@ Pictures are inline SVG, 680 units wide, with a `<title>` and `<desc>`. Keep the
 
 ## Where it runs
 
-- **Inside Claude**, in clients that render interactive visuals inline and provide `sendPrompt`. Send posts the message to the chat.
+- **Inside an AI chat**, in clients that render interactive visuals inline and provide `sendPrompt`. Send posts the message to the chat.
 - **In any browser**, via the standalone page `tools/fill.py --standalone` produces. Send shows the message and copies it.
 - **Where neither is available** (a terminal-only session, a headless agent), ask the same question as a multiple-choice prompt: the three routes plus Postpone, with free text as the custom reply.
 

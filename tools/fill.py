@@ -4,7 +4,7 @@
     python3 tools/fill.py examples/cards.json --ledger examples/ledger.json > board.html
     python3 tools/fill.py examples/cards.json --ledger examples/ledger.json --standalone > demo/index.html
 
-Without --standalone the output is the widget fragment a Claude client renders inline
+Without --standalone the output is the widget fragment an AI chat client renders inline
 (pass it as the widget's HTML). With --standalone it is a complete page that runs in any
 browser: it supplies the colours, icons and a stand-in for sendPrompt that shows and
 copies the message instead of sending it.
@@ -59,13 +59,13 @@ main{max-width:680px;margin:0 auto;padding:28px 16px 48px}
 #outbox button{font:inherit;font-size:13px;padding:6px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface-2);color:var(--text-primary);cursor:pointer}
 </style>
 <script>
-// Stand-in for the Claude client's sendPrompt: show the message and copy it.
+// Stand-in for the chat client's sendPrompt: show the message and copy it.
 window.sendPrompt = function (text) {
   var box = document.getElementById('outbox');
   box.style.display = 'block';
   box.querySelector('pre').textContent = text;
-  try { navigator.clipboard.writeText(text); box.querySelector('.note').textContent = 'Copied. Inside Claude, this goes straight to the chat.'; }
-  catch (e) { box.querySelector('.note').textContent = 'Inside Claude, this goes straight to the chat.'; }
+  try { navigator.clipboard.writeText(text); box.querySelector('.note').textContent = 'Copied. Inside an AI chat, this goes straight to the conversation.'; }
+  catch (e) { box.querySelector('.note').textContent = 'Inside an AI chat, this goes straight to the conversation.'; }
   box.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 };
 window.openLink = function (url) { window.open(url, '_blank', 'noopener'); };
@@ -73,7 +73,7 @@ window.openLink = function (url) { window.open(url, '_blank', 'noopener'); };
 </head>
 <body>
 <main>
-<p class="intro"><b>Decision Board</b> — standalone demo. Pick an answer on each card, open <b>Explain it</b> or <b>Visualise it</b>, then press <b>Send</b>. Inside Claude, Send posts the message to the chat; here it appears below and is copied to your clipboard. <a href="https://github.com/st4rkis/claude-decision-board" style="color:var(--text-accent)">Get it on GitHub</a>.</p>
+<p class="intro"><b>Decision Board</b> — standalone demo. Pick an answer on each card, open <b>Explain it</b> or <b>Visualise it</b>, then press <b>Send</b>. Inside an AI chat, Send posts the message to the conversation; here it appears below and is copied to your clipboard. <a href="https://github.com/st4rkis/decision-board" style="color:var(--text-accent)">Get it on GitHub</a>.</p>
 """
 
 STANDALONE_TAIL = """
